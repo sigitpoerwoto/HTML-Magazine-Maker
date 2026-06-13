@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flip Magazine - 256 Palette & Solid UI</title>
+    <title>Flip Magazine - Bug Free Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -108,12 +108,12 @@
     <div id="readerView" class="hidden fixed inset-0 z-40 bg-black">
         <div id="readerContent" class="reader-x w-full h-full flex scroll-smooth"></div>
         
-        <button id="btnPrevPage" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❮</button>
-        <button id="btnNextPage" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❯</button>
+        <button id="btnPrevPage" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❮</button>
+        <button id="btnNextPage" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❯</button>
 
         <button onclick="toggleReaderUI()" title="Toggle Menu (M / ESC)" class="fixed bottom-6 right-6 z-[60] bg-white/20 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity duration-300 text-xl shadow-2xl border border-gray-400">👁️</button>
 
-        <div id="readerUI" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-wrap justify-center gap-2 w-full px-4 transition-all duration-500 ease-in-out transform">
+        <div id="readerUI" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-wrap justify-center gap-2 w-full px-4 transition-all duration-500 ease-in-out transform opacity-100">
             <button onclick="toggleReaderMode()" id="btnReaderMode" class="btn-mag bg-black/80 dark:bg-gray-800/80 text-white font-bold shadow-2xl border border-gray-600 hover:scale-105 backdrop-blur-md">↕️ VERTICAL SCROLL</button>
             <button onclick="closeReader()" class="btn-mag bg-white/90 dark:bg-gray-300/90 text-black font-bold shadow-2xl border-none hover:scale-105 backdrop-blur-md">📂 PAGE LIST</button>
             <button onclick="closeToShelf()" class="btn-mag bg-[#D83B01]/90 text-white font-bold shadow-2xl border-none hover:scale-105 backdrop-blur-md">🏠 MAGAZINE SHELF</button>
@@ -196,19 +196,22 @@
                 btnIcon.innerText = isDark ? "☀️" : "🌙";
             }
         }
-        if(localStorage.getItem('magFlipDarkMode') === 'true') { document.documentElement.classList.add('dark'); }
+
+        if(localStorage.getItem('magFlipDarkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
         applyDarkModeUI();
+
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('magFlipDarkMode', isDark);
-            applyDarkModeUI(); renderViews(); 
+            applyDarkModeUI();
+            renderViews(); 
         }
 
         // --- 256 COLOR PALETTE GENERATOR ---
         const magPalette = [];
-        // Generate 128 Bold Colors
         for(let i = 0; i < 128; i++) magPalette.push(`hsl(${Math.floor((i/128)*360)}, 80%, 45%)`);
-        // Generate 128 Pastel Colors
         for(let i = 0; i < 128; i++) magPalette.push(`hsl(${Math.floor((i/128)*360)}, 65%, 85%)`);
 
         function getPaletteColor(str) {
@@ -218,10 +221,13 @@
         }
 
         let magData = [];
-        try { const rawData = localStorage.getItem('magFlipData'); if (rawData) { magData = JSON.parse(rawData); if (!Array.isArray(magData)) magData = []; } } catch (e) { magData = []; }
+        try {
+            const rawData = localStorage.getItem('magFlipData');
+            if (rawData) { magData = JSON.parse(rawData); if (!Array.isArray(magData)) magData = []; }
+        } catch (e) { magData = []; }
         
-        let activeHlsEngines = []; let currentView = 'shelf'; let currentMagazine = null; let currentReaderDirection = 'x'; let currentFormMode = 'magazine'; 
-        let isSafeMode = true; 
+        let activeHlsEngines = []; let currentView = 'shelf'; let currentMagazine = null; 
+        let currentReaderDirection = 'x'; let currentFormMode = 'magazine'; let isSafeMode = true; 
         
         // --- MANUAL UI TOGGLE ---
         let isUIVisible = true;
@@ -284,15 +290,42 @@
             });
         }
 
+        // --- FIXED REORDER AND DELETE LOGIC (CASTING ID TO STRING) ---
         function movePage(id, direction) {
             let mediaItems = getFilteredData().filter(i => i.type !== 'meta' && i.category === currentMagazine);
-            let pos = mediaItems.findIndex(i => i.id === id);
+            let pos = mediaItems.findIndex(i => String(i.id) === String(id));
             if (pos === -1) return;
+            
             let targetPos = pos + direction;
             if (targetPos < 0 || targetPos >= mediaItems.length) return;
-            let item1 = mediaItems[pos]; let item2 = mediaItems[targetPos];
-            let idx1 = magData.findIndex(i => i.id === item1.id); let idx2 = magData.findIndex(i => i.id === item2.id);
-            if (idx1 !== -1 && idx2 !== -1) { let temp = magData[idx1]; magData[idx1] = magData[idx2]; magData[idx2] = temp; saveData(); }
+            
+            let item1 = mediaItems[pos]; 
+            let item2 = mediaItems[targetPos];
+            
+            let idx1 = magData.findIndex(i => String(i.id) === String(item1.id)); 
+            let idx2 = magData.findIndex(i => String(i.id) === String(item2.id));
+            
+            if (idx1 !== -1 && idx2 !== -1) { 
+                let temp = magData[idx1]; 
+                magData[idx1] = magData[idx2]; 
+                magData[idx2] = temp; 
+                saveData(); 
+            }
+        }
+
+        function deletePage(id) {
+            if (confirm("Delete this page from the magazine?")) {
+                // BUG FIXED: Memaksa kedua ID menjadi String agar kompatibel dengan memori lama
+                magData = magData.filter(i => String(i.id) !== String(id));
+                saveData();
+            }
+        }
+
+        function setCover(id, category) { 
+            magData.forEach(i => { if (i.category === category) i.isCover = false; }); 
+            const target = magData.find(i => String(i.id) === String(id)); 
+            if (target) target.isCover = true; 
+            saveData(); 
         }
 
         const imgView = document.getElementById('imageViewer'); const zoomImg = document.getElementById('zoomImage');
@@ -508,6 +541,20 @@
             return `<div class="w-full h-full ${getPaletteColor(item.id)} flex items-center justify-center text-4xl pointer-events-none text-white">📄</div>`;
         }
 
+        function smartMergeItem(newItem) {
+            if (newItem.type === 'meta') {
+                let existingIndex = magData.findIndex(item => item.type === 'meta' && item.category === newItem.category);
+                if (existingIndex === -1) magData.push(newItem);
+                else {
+                    magData[existingIndex].notes = newItem.notes; 
+                    magData[existingIndex].tags = newItem.tags;
+                }
+            } else {
+                let existingItem = magData.find(i => String(i.id) === String(newItem.id));
+                if (!existingItem) magData.unshift(newItem);
+            }
+        }
+
         function renderViews() { if (currentView === 'shelf') renderShelf(); else if (currentView === 'inside') renderInsideMagazine(currentMagazine); }
 
         function openShelf() {
@@ -520,7 +567,11 @@
 
         function openInside(category) { currentView = 'inside'; currentMagazine = category; document.getElementById('shelfView').classList.add('hidden'); document.getElementById('insideView').classList.remove('hidden'); renderViews(); }
 
-        function deleteMagazine(category) { if (confirm(`WARNING!\n\nAre you sure you want to delete the ENTIRE magazine "${category}" and all its pages?\n\nThis action cannot be undone!`)) { magData = magData.filter(i => i.category !== category); saveData(); openShelf(); } }
+        function deleteMagazine(category) {
+            if (confirm(`WARNING!\n\nAre you sure you want to delete the ENTIRE magazine "${category}" and all its pages?\n\nThis action cannot be undone!`)) {
+                magData = magData.filter(i => i.category !== category); saveData(); openShelf();
+            }
+        }
 
         function renderShelf() {
             const grid = document.getElementById('magazineGrid'); const keyword = document.getElementById('searchInput').value.trim().toLowerCase(); grid.innerHTML = '';
@@ -599,7 +650,8 @@
                         <h2 class="text-5xl md:text-8xl mb-4 text-center magazine-title uppercase drop-shadow-lg">${currentMagazine}</h2>
                         <p class="text-xl font-light tracking-widest uppercase mb-12 drop-shadow-md">${mediaItems.length} PAGES</p>
                         <div class="animate-pulse mt-8 border border-white rounded-full px-6 py-2 text-xs tracking-widest font-bold text-center">
-                            SWIPE OR USE ARROWS TO READ<br><span class="text-[9px] mt-2 block opacity-70">PRESS 'M' OR 'ESC' FOR MENU</span>
+                            SWIPE OR USE ARROWS TO READ<br>
+                            <span class="text-[9px] mt-2 block opacity-70">PRESS 'M' OR 'ESC' FOR MENU</span>
                         </div>
                     </div>
                 </div>
@@ -617,7 +669,6 @@
             
             applyReaderDirection();
             
-            // Force show UI on start
             isUIVisible = false; 
             toggleReaderUI(); 
         }
@@ -633,7 +684,7 @@
             
             if (mode === 'magazine') { document.getElementById('formTitle').innerText = "Create New Magazine"; magFields.classList.remove('hidden'); pageFields.classList.add('hidden'); btnSubmit.innerText = "CREATE MAGAZINE"; } 
             else if (mode === 'editMagazine') { document.getElementById('formTitle').innerText = `Edit Magazine`; magFields.classList.remove('hidden'); pageFields.classList.add('hidden'); const meta = magData.find(i => i.type === 'meta' && i.category === editId); if (meta) { document.getElementById('magNameInput').value = meta.category; document.getElementById('magDescInput').value = meta.notes || ''; document.getElementById('oldCategoryInput').value = meta.category; document.getElementById('nsfwCheckbox').checked = (meta.tags || '').toLowerCase().includes('nsfw'); } btnSubmit.innerText = "SAVE CHANGES"; }
-            else if (mode === 'edit') { document.getElementById('formTitle').innerText = `Edit Page`; magFields.classList.add('hidden'); pageFields.classList.remove('hidden'); const item = magData.find(i => i.id === editId); if (item) { document.getElementById('editIdInput').value = item.id; document.getElementById('urlInput').value = (item.urls && item.urls.length > 0) ? item.urls.join('\n') : (item.url || ''); document.getElementById('sourceUrlInput').value = item.sourceUrl || ''; document.getElementById('titleInput').value = item.title || ''; document.getElementById('notesInput').value = item.notes || ''; document.getElementById('tagsInput').value = (item.tags || '').split(',').map(t=>t.trim()).filter(t=>t.toLowerCase()!=='nsfw').join(', '); document.getElementById('nsfwCheckbox').checked = (item.tags || '').toLowerCase().includes('nsfw'); } btnSubmit.innerText = "SAVE CHANGES"; }
+            else if (mode === 'edit') { document.getElementById('formTitle').innerText = `Edit Page`; magFields.classList.add('hidden'); pageFields.classList.remove('hidden'); const item = magData.find(i => String(i.id) === String(editId)); if (item) { document.getElementById('editIdInput').value = item.id; document.getElementById('urlInput').value = (item.urls && item.urls.length > 0) ? item.urls.join('\n') : (item.url || ''); document.getElementById('sourceUrlInput').value = item.sourceUrl || ''; document.getElementById('titleInput').value = item.title || ''; document.getElementById('notesInput').value = item.notes || ''; document.getElementById('tagsInput').value = (item.tags || '').split(',').map(t=>t.trim()).filter(t=>t.toLowerCase()!=='nsfw').join(', '); document.getElementById('nsfwCheckbox').checked = (item.tags || '').toLowerCase().includes('nsfw'); } btnSubmit.innerText = "SAVE CHANGES"; }
             else { document.getElementById('formTitle').innerText = `Add Page`; magFields.classList.add('hidden'); pageFields.classList.remove('hidden'); btnSubmit.innerText = "SAVE PAGE"; }
             document.getElementById('formModal').classList.remove('hidden'); 
         }
@@ -661,6 +712,7 @@
                 } else {
                     let rawInput = document.getElementById('urlInput').value.trim(); let rawUrls = rawInput.split('\n').map(u => u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1')).filter(u => u !== '');
                     let sourceUrl = document.getElementById('sourceUrlInput').value.trim(); let inputNotes = document.getElementById('notesInput').value.trim(); let inputTitle = document.getElementById('titleInput').value.trim();
+
                     if(rawUrls.length === 0 && !inputNotes && !sourceUrl){ alert("Please provide at least a Media Link OR an Article Note."); return; }
 
                     let mediaOrientations = await Promise.all(rawUrls.map(u => getOrientation(u)));
@@ -685,7 +737,7 @@
                         generatedItems.push(newPage);
                     }
 
-                    if (currentFormMode === 'edit') { let editId = document.getElementById('editIdInput').value; let itemIndex = magData.findIndex(i => i.id === editId); if (itemIndex > -1) { magData.splice(itemIndex, 1, ...generatedItems); } } 
+                    if (currentFormMode === 'edit') { let editId = document.getElementById('editIdInput').value; let itemIndex = magData.findIndex(i => String(i.id) === String(editId)); if (itemIndex > -1) { magData.splice(itemIndex, 1, ...generatedItems); } } 
                     else { magData.unshift(...generatedItems); }
                     saveData(); closeForm();
                 }
@@ -704,7 +756,7 @@
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (Array.isArray(importedData)) { importedData.forEach(item => { if (item.type === 'meta') { let existingIndex = magData.findIndex(i => i.type === 'meta' && i.category === item.category); if (existingIndex === -1) magData.push(item); } else { let exists = magData.find(i => i.id === item.id); if (!exists) magData.unshift(item); } }); saveData(); alert(`Backup data restored successfully!`); } 
+                    if (Array.isArray(importedData)) { importedData.forEach(item => { if (item.type === 'meta') { let existingIndex = magData.findIndex(i => i.type === 'meta' && i.category === item.category); if (existingIndex === -1) magData.push(item); } else { let exists = magData.find(i => String(i.id) === String(item.id)); if (!exists) magData.unshift(item); } }); saveData(); alert(`Backup data restored successfully!`); } 
                     else { alert("Invalid file format."); }
                 } catch (err) { alert("Invalid JSON file. Please ensure it is a valid backup file."); }
                 document.getElementById('importFile').value = ''; 
