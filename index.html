@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flip Magazine - English Edition</title>
+    <title>Flip Magazine - 256 Palette & Solid UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {} }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
         
-        body { font-family: 'Lato', sans-serif; background-color: #f8f9fa; color: #1a1a1a; margin: 0; overflow: hidden; }
+        body { font-family: 'Lato', sans-serif; margin: 0; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
+        .bg-light { background-color: #f8f9fa; color: #1a1a1a; }
+        
         h1, h2, h3, .magazine-title { font-family: 'Playfair Display', serif; }
         ::-webkit-scrollbar { width: 4px; height: 4px; background: transparent; }
         ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; } 
@@ -22,9 +30,14 @@
         }
         .btn-mag:hover:not(:disabled) { background: #1a1a1a; color: white; }
         .btn-mag:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .dark .btn-mag { border-color: #e5e7eb; color: #e5e7eb; }
+        .dark .btn-mag:hover:not(:disabled) { background: #e5e7eb; color: #1a1a1a; }
         
         .search-bar { border: none; border-bottom: 2px solid #1a1a1a; background: transparent; font-family: 'Lato', sans-serif; outline: none; transition: border-color 0.3s; }
         .search-bar:focus { border-bottom: 2px solid #0078D7; }
+        .dark .search-bar { border-bottom-color: #e5e7eb; color: #e5e7eb; }
+        .dark .search-bar:focus { border-bottom-color: #3b82f6; }
 
         .reader-y { flex-direction: column; overflow-y: auto; overflow-x: hidden; scroll-snap-type: y mandatory; }
         .reader-y .snap-page { scroll-snap-align: start; width: 100vw; height: 100vh; flex-shrink: 0; }
@@ -39,49 +52,53 @@
         }
     </style>
 </head>
-<body>
+<body class="bg-light dark:bg-gray-900 dark:text-gray-100">
 
-    <header id="globalHeader" class="fixed top-0 w-full z-50 p-6 flex justify-between items-center bg-white/95 backdrop-blur-md shadow-sm transition-all duration-500 ease-in-out transform">
+    <header id="globalHeader" class="fixed top-0 w-full z-50 p-6 flex justify-between items-center bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm transition-all duration-500 ease-in-out transform">
         <div class="flex items-center gap-8">
-            <h1 class="text-2xl font-bold tracking-widest uppercase cursor-pointer" onclick="openShelf()">MAGAZINE.</h1>
+            <h1 class="text-2xl font-bold tracking-widest uppercase cursor-pointer text-gray-900 dark:text-white" onclick="openShelf()">MAGAZINE.</h1>
             <div class="relative hidden md:block">
-                <span class="absolute left-0 bottom-2 text-gray-500">🔍</span>
+                <span class="absolute left-0 bottom-2 text-gray-500 dark:text-gray-400">🔍</span>
                 <input type="text" id="searchInput" placeholder="Search pages..." class="search-bar pl-6 py-2 w-64 text-sm font-bold tracking-wide" oninput="renderViews()">
             </div>
         </div>
         
         <div class="flex gap-4 relative z-50">
-            <button onclick="toggleSafeMode()" id="safeModeBtn" class="btn-mag text-[#107C10] bg-white flex items-center gap-2 border-gray-300 transition-colors hidden md:flex">
+            <button onclick="toggleDarkMode()" id="darkModeBtn" class="btn-mag flex items-center gap-2 border-gray-300 dark:border-gray-600 transition-colors">
+                <span id="darkModeIcon" class="text-lg leading-none">🌙</span> 
+                <span id="darkModeText" class="font-bold">DARK</span>
+            </button>
+            <button onclick="toggleSafeMode()" id="safeModeBtn" class="btn-mag text-[#107C10] dark:text-green-400 flex items-center gap-2 border-gray-300 dark:border-gray-600 transition-colors hidden md:flex">
                 <span id="safeModeIcon" class="text-lg leading-none">🛡️</span> 
                 <span id="safeModeText" class="font-bold">SAFE: ON</span>
             </button>
-            <button onclick="document.getElementById('importFile').click()" class="btn-mag bg-white font-bold hidden md:block">📥 RESTORE</button>
+            <button onclick="document.getElementById('importFile').click()" class="btn-mag hidden md:block">📥 RESTORE</button>
             <input type="file" id="importFile" accept=".json,.txt" class="hidden" onchange="importData(event)">
-            <button onclick="exportData()" class="btn-mag bg-white font-bold hidden md:block">📦 BACKUP (.JSON)</button>
-            <button onclick="openForm('magazine')" id="btnGlobalAdd" class="btn-mag bg-black text-white font-bold cursor-pointer">+ NEW MAGAZINE</button>
+            <button onclick="exportData()" class="btn-mag hidden md:block">📦 BACKUP (.JSON)</button>
+            <button onclick="openForm('magazine')" id="btnGlobalAdd" class="btn-mag bg-black dark:bg-gray-200 text-white dark:text-black font-bold cursor-pointer hover:bg-gray-800 dark:hover:bg-white">+ NEW MAGAZINE</button>
         </div>
     </header>
 
-    <main id="shelfView" class="w-full h-screen overflow-y-auto pt-28 px-8 pb-12">
+    <main id="shelfView" class="w-full h-screen overflow-y-auto pt-28 px-8 pb-12 dark:bg-gray-900">
         <div class="max-w-6xl mx-auto">
-            <h2 class="text-4xl italic mb-12 text-center text-gray-800">Magazine Shelf</h2>
+            <h2 class="text-4xl italic mb-12 text-center text-gray-800 dark:text-gray-200">Magazine Shelf</h2>
             <div id="magazineGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8"></div>
         </div>
     </main>
 
-    <main id="insideView" class="hidden w-full h-screen overflow-y-auto pt-28 px-8 pb-12 bg-gray-50">
+    <main id="insideView" class="hidden w-full h-screen overflow-y-auto pt-28 px-8 pb-12 bg-gray-50 dark:bg-gray-800">
         <div class="max-w-6xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-2 border-black pb-4 gap-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 border-b-2 border-black dark:border-gray-500 pb-4 gap-4">
                 <div>
-                    <button onclick="openShelf()" class="text-sm font-bold text-gray-500 uppercase tracking-widest hover:text-black mb-2">← BACK TO SHELF</button>
-                    <h2 id="insideTitle" class="text-5xl font-bold magazine-title text-gray-900 uppercase">Magazine Title</h2>
-                    <p id="insideDesc" class="text-gray-600 mt-2 text-sm italic max-w-2xl"></p>
+                    <button onclick="openShelf()" class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest hover:text-black dark:hover:text-white mb-2">← BACK TO SHELF</button>
+                    <h2 id="insideTitle" class="text-5xl font-bold magazine-title text-gray-900 dark:text-white uppercase">Magazine Title</h2>
+                    <p id="insideDesc" class="text-gray-600 dark:text-gray-400 mt-2 text-sm italic max-w-2xl"></p>
                     <p id="insideCount" class="text-gray-400 mt-2 tracking-widest text-xs font-bold uppercase">0 Pages</p>
                 </div>
                 <div class="flex flex-wrap gap-4 w-full md:w-auto">
-                    <button onclick="downloadMagazineHTML()" id="btnDownloadHtml" class="btn-mag bg-[#0078D7] text-white font-bold border-none hover:bg-blue-800">🌐 DOWNLOAD HTML</button>
-                    <button onclick="openForm('page')" class="btn-mag bg-white text-black font-bold border-gray-300">+ ADD PAGE</button>
-                    <button onclick="startReading()" class="btn-mag bg-black text-white font-bold shadow-lg border-none px-6">📖 READ MAGAZINE</button>
+                    <button onclick="downloadMagazineHTML()" id="btnDownloadHtml" class="btn-mag bg-[#0078D7] text-white border-none hover:bg-blue-800 dark:bg-blue-600 dark:text-white font-bold">🌐 DOWNLOAD HTML</button>
+                    <button onclick="openForm('page')" class="btn-mag bg-white dark:bg-gray-700 text-black dark:text-white font-bold">+ ADD PAGE</button>
+                    <button onclick="startReading()" class="btn-mag bg-black dark:bg-gray-200 text-white dark:text-black font-bold shadow-lg border-none px-6">📖 READ MAGAZINE</button>
                 </div>
             </div>
             <div id="pageGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
@@ -91,13 +108,15 @@
     <div id="readerView" class="hidden fixed inset-0 z-40 bg-black">
         <div id="readerContent" class="reader-x w-full h-full flex scroll-smooth"></div>
         
-        <button id="btnPrevPage" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❮</button>
-        <button id="btnNextPage" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❯</button>
+        <button id="btnPrevPage" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❮</button>
+        <button id="btnNextPage" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❯</button>
+
+        <button onclick="toggleReaderUI()" title="Toggle Menu (M / ESC)" class="fixed bottom-6 right-6 z-[60] bg-white/20 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity duration-300 text-xl shadow-2xl border border-gray-400">👁️</button>
 
         <div id="readerUI" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-wrap justify-center gap-2 w-full px-4 transition-all duration-500 ease-in-out transform">
-            <button onclick="toggleReaderMode()" id="btnReaderMode" class="btn-mag bg-black text-white font-bold shadow-2xl border border-gray-600 hover:scale-105">↕️ VERTICAL SCROLL</button>
-            <button onclick="closeReader()" class="btn-mag bg-white text-black font-bold shadow-2xl border-none hover:scale-105">📂 PAGE LIST</button>
-            <button onclick="closeToShelf()" class="btn-mag bg-[#D83B01] text-white font-bold shadow-2xl border-none hover:scale-105">🏠 MAGAZINE SHELF</button>
+            <button onclick="toggleReaderMode()" id="btnReaderMode" class="btn-mag bg-black/80 dark:bg-gray-800/80 text-white font-bold shadow-2xl border border-gray-600 hover:scale-105 backdrop-blur-md">↕️ VERTICAL SCROLL</button>
+            <button onclick="closeReader()" class="btn-mag bg-white/90 dark:bg-gray-300/90 text-black font-bold shadow-2xl border-none hover:scale-105 backdrop-blur-md">📂 PAGE LIST</button>
+            <button onclick="closeToShelf()" class="btn-mag bg-[#D83B01]/90 text-white font-bold shadow-2xl border-none hover:scale-105 backdrop-blur-md">🏠 MAGAZINE SHELF</button>
         </div>
     </div>
 
@@ -108,96 +127,126 @@
     </div>
 
     <div id="formModal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white border border-gray-300 shadow-2xl w-full max-w-3xl p-8 relative max-h-[95vh] overflow-y-auto">
-            <button type="button" onclick="closeForm()" class="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl font-light">✕</button>
-            <h2 id="formTitle" class="text-3xl mb-6 magazine-title">Form</h2>
+        <div class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-2xl w-full max-w-3xl p-8 relative max-h-[95vh] overflow-y-auto">
+            <button type="button" onclick="closeForm()" class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white text-2xl font-light">✕</button>
+            <h2 id="formTitle" class="text-3xl mb-6 magazine-title text-gray-900 dark:text-white">Form</h2>
             
             <form id="mediaForm" class="space-y-4">
                 <input type="hidden" id="editIdInput">
                 <input type="hidden" id="oldCategoryInput">
                 
-                <div id="magazineFields" class="hidden space-y-4 border-b pb-6 border-gray-200">
+                <div id="magazineFields" class="hidden space-y-4 border-b pb-6 border-gray-200 dark:border-gray-700">
                     <div>
-                        <label class="text-xs tracking-widest text-gray-500 uppercase">Magazine Name</label>
-                        <input type="text" id="magNameInput" placeholder="e.g., Design Inspiration 2026" class="w-full p-3 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent font-bold text-lg">
+                        <label class="text-xs tracking-widest text-gray-500 dark:text-gray-400 uppercase">Magazine Name</label>
+                        <input type="text" id="magNameInput" placeholder="e.g., Design Inspiration 2026" class="w-full p-3 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-white outline-none bg-transparent font-bold text-lg text-gray-900 dark:text-white">
                     </div>
                     <div>
-                        <label class="text-xs tracking-widest text-gray-500 uppercase">Description (Optional)</label>
-                        <textarea id="magDescInput" rows="2" placeholder="Collection of ideas and visual references..." class="w-full p-3 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent resize-none"></textarea>
+                        <label class="text-xs tracking-widest text-gray-500 dark:text-gray-400 uppercase">Description (Optional)</label>
+                        <textarea id="magDescInput" rows="2" placeholder="Collection of ideas and visual references..." class="w-full p-3 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-white outline-none bg-transparent resize-none text-gray-900 dark:text-white"></textarea>
                     </div>
                 </div>
 
-                <div id="pageFields" class="hidden space-y-5 border-b pb-6 border-gray-200">
-                    <div class="bg-gray-50 p-4 border border-gray-200 relative">
-                        <label class="text-xs tracking-widest text-gray-800 font-bold uppercase block mb-2">1. Media / Collage Links</label>
-                        <p class="text-[10px] text-gray-500 mb-2">Separate with "Enter". More than 4 links will auto-split into the next pages.</p>
-                        <textarea id="urlInput" rows="3" placeholder="https://image-link-1.jpg&#10;https://video-link-2.mp4" class="w-full p-3 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent text-blue-600 resize-y"></textarea>
+                <div id="pageFields" class="hidden space-y-5 border-b pb-6 border-gray-200 dark:border-gray-700">
+                    <div class="bg-gray-50 dark:bg-gray-900 p-4 border border-gray-200 dark:border-gray-700 relative">
+                        <label class="text-xs tracking-widest text-gray-800 dark:text-gray-300 font-bold uppercase block mb-2">1. Media / Collage Links</label>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-2">Separate with "Enter". Smart Layout: Landscape = 1 image, Portrait = 2 images per page.</p>
+                        <textarea id="urlInput" rows="3" placeholder="https://image-link-1.jpg&#10;https://video-link-2.mp4" class="w-full p-3 border-b-2 border-gray-300 dark:border-gray-600 focus:border-blue-500 outline-none bg-transparent text-blue-600 dark:text-blue-400 resize-y"></textarea>
                     </div>
                     
-                    <div class="bg-blue-50/50 p-4 border border-blue-100">
-                        <label class="text-xs tracking-widest text-blue-800 font-bold uppercase block mb-2">2. Original Source Link (Optional)</label>
-                        <p class="text-[10px] text-blue-600 mb-2">For reference only. Will appear as an "Open Original Source" button.</p>
-                        <input type="text" id="sourceUrlInput" placeholder="https://news-source.com/article" class="w-full p-3 border-b-2 border-blue-200 focus:border-blue-600 outline-none bg-transparent">
+                    <div class="bg-blue-50/50 dark:bg-blue-900/30 p-4 border border-blue-100 dark:border-blue-800">
+                        <label class="text-xs tracking-widest text-blue-800 dark:text-blue-300 font-bold uppercase block mb-2">2. Original Source Link (Optional)</label>
+                        <p class="text-[10px] text-blue-600 dark:text-blue-400 mb-2">For reference only. Will appear as an "Open Original Source" button.</p>
+                        <input type="text" id="sourceUrlInput" placeholder="https://news-source.com/article" class="w-full p-3 border-b-2 border-blue-200 dark:border-blue-700 focus:border-blue-600 outline-none bg-transparent text-blue-800 dark:text-blue-200">
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="text-xs tracking-widest text-gray-500 uppercase">3. Headline (Title - Optional)</label>
-                            <input type="text" id="titleInput" placeholder="Leave blank if you only want photos" class="w-full p-3 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent">
+                            <label class="text-xs tracking-widest text-gray-500 dark:text-gray-400 uppercase">3. Headline (Title - Optional)</label>
+                            <input type="text" id="titleInput" placeholder="Leave blank if you only want photos" class="w-full p-3 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-white outline-none bg-transparent text-gray-900 dark:text-white">
                         </div>
                         <div>
-                            <label class="text-xs tracking-widest text-gray-500 uppercase">4. Article / Notes</label>
-                            <textarea id="notesInput" rows="3" placeholder="Very long text will automatically split into multiple pages." class="w-full p-3 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent resize-none"></textarea>
+                            <label class="text-xs tracking-widest text-gray-500 dark:text-gray-400 uppercase">4. Article / Notes</label>
+                            <textarea id="notesInput" rows="3" placeholder="Smart Layout: Pure text will automatically split into 2 magazine columns." class="w-full p-3 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-white outline-none bg-transparent resize-none text-gray-900 dark:text-white"></textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="pt-2">
-                    <label class="text-xs tracking-widest text-gray-500 uppercase">Tags</label>
-                    <input type="text" id="tagsInput" placeholder="news, ai, 2026..." class="w-full p-3 border-b-2 border-gray-300 focus:border-black outline-none bg-transparent text-sm">
+                    <label class="text-xs tracking-widest text-gray-500 dark:text-gray-400 uppercase">Tags</label>
+                    <input type="text" id="tagsInput" placeholder="news, ai, 2026..." class="w-full p-3 border-b-2 border-gray-300 dark:border-gray-600 focus:border-black dark:focus:border-white outline-none bg-transparent text-sm text-gray-900 dark:text-white">
                     
-                    <label class="flex items-center gap-3 text-xs font-bold tracking-widest text-[#D83B01] p-4 border border-red-100 bg-red-50 cursor-pointer hover:border-[#D83B01] transition mt-4">
+                    <label class="flex items-center gap-3 text-xs font-bold tracking-widest text-[#D83B01] dark:text-red-400 p-4 border border-red-100 dark:border-red-900 bg-red-50 dark:bg-red-900/20 cursor-pointer hover:border-[#D83B01] transition mt-4">
                         <input type="checkbox" id="nsfwCheckbox" class="w-5 h-5 accent-[#D83B01] cursor-pointer rounded-none">
                         MARK AS NSFW / PRIVATE
                     </label>
                 </div>
 
-                <button type="submit" id="btnSubmitForm" class="btn-mag bg-black text-white w-full mt-6 text-sm font-bold py-4 shadow-lg">SAVE PAGE</button>
+                <button type="submit" id="btnSubmitForm" class="btn-mag bg-black dark:bg-white text-white dark:text-black w-full mt-6 text-sm font-bold py-4 shadow-lg transition-all">SAVE PAGE</button>
             </form>
         </div>
     </div>
 
     <script>
-        // INIT DATABASE & STATE
-        let magData = [];
-        try {
-            const rawData = localStorage.getItem('magFlipData');
-            if (rawData) {
-                magData = JSON.parse(rawData);
-                if (!Array.isArray(magData)) magData = [];
+        function applyDarkModeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const btnText = document.getElementById('darkModeText');
+            const btnIcon = document.getElementById('darkModeIcon');
+            if(btnText) {
+                btnText.innerText = isDark ? "LIGHT" : "DARK";
+                btnIcon.innerText = isDark ? "☀️" : "🌙";
             }
-        } catch (e) { magData = []; }
-        
-        let activeHlsEngines = [];
-        let currentView = 'shelf'; 
-        let currentMagazine = null; 
-        let currentReaderDirection = 'x'; 
-        let currentFormMode = 'magazine'; 
-        
-        let isSafeMode = true; 
-        let readerUITimer = null;
-
-        function saveData() { localStorage.setItem('magFlipData', JSON.stringify(magData)); renderViews(); }
-
-        function getPastelColor(str) {
-            let hash = 0; if (!str) str = "default";
-            for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
-            let r = (hash & 0xFF0000) >> 16; let g = (hash & 0x00FF00) >> 8; let b = hash & 0x0000FF;
-            r = Math.floor((r + 255) / 2); g = Math.floor((g + 255) / 2); b = Math.floor((b + 255) / 2);
-            return `rgb(${r}, ${g}, ${b})`;
+        }
+        if(localStorage.getItem('magFlipDarkMode') === 'true') { document.documentElement.classList.add('dark'); }
+        applyDarkModeUI();
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('magFlipDarkMode', isDark);
+            applyDarkModeUI(); renderViews(); 
         }
 
-        // AUTO PAGINATION LOGIC
+        // --- 256 COLOR PALETTE GENERATOR ---
+        const magPalette = [];
+        // Generate 128 Bold Colors
+        for(let i = 0; i < 128; i++) magPalette.push(`hsl(${Math.floor((i/128)*360)}, 80%, 45%)`);
+        // Generate 128 Pastel Colors
+        for(let i = 0; i < 128; i++) magPalette.push(`hsl(${Math.floor((i/128)*360)}, 65%, 85%)`);
+
+        function getPaletteColor(str) {
+            let hash = 0; if (!str) str = "default";
+            for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
+            return magPalette[Math.abs(hash) % 256];
+        }
+
+        let magData = [];
+        try { const rawData = localStorage.getItem('magFlipData'); if (rawData) { magData = JSON.parse(rawData); if (!Array.isArray(magData)) magData = []; } } catch (e) { magData = []; }
+        
+        let activeHlsEngines = []; let currentView = 'shelf'; let currentMagazine = null; let currentReaderDirection = 'x'; let currentFormMode = 'magazine'; 
+        let isSafeMode = true; 
+        
+        // --- MANUAL UI TOGGLE ---
+        let isUIVisible = true;
+        function toggleReaderUI() {
+            isUIVisible = !isUIVisible;
+            const uiBottom = document.getElementById('readerUI');
+            const uiTop = document.getElementById('globalHeader');
+            const btnPrev = document.getElementById('btnPrevPage');
+            const btnNext = document.getElementById('btnNextPage');
+            
+            if (isUIVisible) {
+                if(uiBottom) uiBottom.classList.remove('opacity-0', 'pointer-events-none');
+                if(uiTop) uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
+                if(btnPrev) btnPrev.classList.remove('opacity-0', 'pointer-events-none');
+                if(btnNext) btnNext.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                if(uiBottom) uiBottom.classList.add('opacity-0', 'pointer-events-none');
+                if(uiTop) uiTop.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
+                if(btnPrev) btnPrev.classList.add('opacity-0', 'pointer-events-none');
+                if(btnNext) btnNext.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function saveData() { localStorage.setItem('magFlipData', JSON.stringify(magData)); renderViews(); }
+        
         function splitTextIntoChunks(text, maxLength) {
             if (!text) return [];
             let chunks = []; let paragraphs = text.split('\n'); let currentChunk = '';
@@ -220,49 +269,125 @@
             return chunks;
         }
 
-        // --- IMAGE ZOOM LOGIC ---
-        const imgView = document.getElementById('imageViewer');
-        const zoomImg = document.getElementById('zoomImage');
-        let zScale = 1, zPanning = false, zPointX = 0, zPointY = 0, zStartX = 0, zStartY = 0;
-        let initialPinchDistance = null, initialScale = 1;
-
-        function openImageViewer(url) {
-            zoomImg.src = url; zScale = 1; zPointX = 0; zPointY = 0;
-            zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`;
-            imgView.classList.remove('hidden');
+        function getOrientation(url) {
+            return new Promise((resolve) => {
+                let type = detectMediaType(url);
+                if (type !== 'image') return resolve('landscape'); 
+                let img = new Image();
+                img.onload = function() {
+                    if (this.width > this.height * 1.1) resolve('landscape');
+                    else if (this.height > this.width * 1.1) resolve('portrait');
+                    else resolve('square');
+                }
+                img.onerror = function() { resolve('landscape'); }
+                img.src = url;
+            });
         }
-        function closeImageViewer() { imgView.classList.add('hidden'); zoomImg.src = ''; }
 
+        function movePage(id, direction) {
+            let mediaItems = getFilteredData().filter(i => i.type !== 'meta' && i.category === currentMagazine);
+            let pos = mediaItems.findIndex(i => i.id === id);
+            if (pos === -1) return;
+            let targetPos = pos + direction;
+            if (targetPos < 0 || targetPos >= mediaItems.length) return;
+            let item1 = mediaItems[pos]; let item2 = mediaItems[targetPos];
+            let idx1 = magData.findIndex(i => i.id === item1.id); let idx2 = magData.findIndex(i => i.id === item2.id);
+            if (idx1 !== -1 && idx2 !== -1) { let temp = magData[idx1]; magData[idx1] = magData[idx2]; magData[idx2] = temp; saveData(); }
+        }
+
+        const imgView = document.getElementById('imageViewer'); const zoomImg = document.getElementById('zoomImage');
+        let zScale = 1, zPanning = false, zPointX = 0, zPointY = 0, zStartX = 0, zStartY = 0; let initialPinchDistance = null, initialScale = 1;
+        function openImageViewer(url) { zoomImg.src = url; zScale = 1; zPointX = 0; zPointY = 0; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; imgView.classList.remove('hidden'); }
+        function closeImageViewer() { imgView.classList.add('hidden'); zoomImg.src = ''; }
         zoomImg.onmousedown = function(e) { e.preventDefault(); zPanning = true; zStartX = e.clientX - zPointX; zStartY = e.clientY - zPointY; zoomImg.classList.replace('cursor-grab', 'cursor-grabbing'); }
         imgView.onmouseup = function() { zPanning = false; zoomImg.classList.replace('cursor-grabbing', 'cursor-grab'); }
         imgView.onmouseleave = function() { zPanning = false; zoomImg.classList.replace('cursor-grabbing', 'cursor-grab'); }
         imgView.onmousemove = function(e) { if(!zPanning) return; zPointX = e.clientX - zStartX; zPointY = e.clientY - zStartY; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; }
+        imgView.onwheel = function(e) { e.preventDefault(); let xs = (e.clientX - zPointX) / zScale; let ys = (e.clientY - zPointY) / zScale; let delta = (e.wheelDelta ? -e.wheelDelta : e.deltaY); (delta > 0) ? (zScale /= 1.2) : (zScale *= 1.2); zScale = Math.min(Math.max(1, zScale), 4); zPointX = e.clientX - xs * zScale; zPointY = e.clientY - ys * zScale; if(zScale === 1) { zPointX = 0; zPointY = 0; } zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; }
+        imgView.addEventListener('touchstart', (e) => { if (e.touches.length === 2) { initialPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); initialScale = zScale; } else if (e.touches.length === 1) { zPanning = true; zStartX = e.touches[0].clientX - zPointX; zStartY = e.touches[0].clientY - zPointY; } });
+        imgView.addEventListener('touchmove', (e) => { if (e.touches.length === 2) { e.preventDefault(); const currentDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zScale = Math.min(Math.max(1, initialScale * (currentDistance / initialPinchDistance)), 4); zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } else if (e.touches.length === 1 && zPanning) { e.preventDefault(); zPointX = e.touches[0].clientX - zStartX; zPointY = e.touches[0].clientY - zStartY; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } }, {passive: false});
+        imgView.addEventListener('touchend', (e) => { if (e.touches.length < 2) initialPinchDistance = null; if (e.touches.length === 0) { zPanning = false; if(zScale === 1) { zPointX = 0; zPointY = 0; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } } });
 
-        imgView.onwheel = function(e) {
-            e.preventDefault();
-            let xs = (e.clientX - zPointX) / zScale; let ys = (e.clientY - zPointY) / zScale;
-            let delta = (e.wheelDelta ? -e.wheelDelta : e.deltaY);
-            (delta > 0) ? (zScale /= 1.2) : (zScale *= 1.2);
-            zScale = Math.min(Math.max(1, zScale), 4); 
-            zPointX = e.clientX - xs * zScale; zPointY = e.clientY - ys * zScale;
-            if(zScale === 1) { zPointX = 0; zPointY = 0; } 
-            zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`;
+        function generatePageHtml(item, globalPageCount, isDarkExport) {
+            let urlsToRender = item.urls && item.urls.length > 0 ? item.urls : (item.url ? [item.url] : []);
+            let isReverse = (globalPageCount % 2 === 0); 
+            let flexDirClass = isReverse ? 'md:flex-row-reverse' : 'md:flex-row';
+            let borderDirClass = isReverse ? 'border-l-2' : 'border-r-2';
+
+            let hasMedia = urlsToRender.length > 0;
+            let titleClean = item.title && item.title !== 'Tanpa Judul' ? item.title : '';
+            let notesClean = item.notes || '';
+            let hasText = !!titleClean || !!notesClean.trim() || !!item.sourceUrl;
+
+            let textColorClass = isDarkExport ? 'text-gray-300' : 'text-gray-700';
+            let titleColorClass = isDarkExport ? 'text-white' : 'text-gray-900';
+            let dividerColorClass = isDarkExport ? 'bg-gray-400' : 'bg-black';
+            let bgClass = isDarkExport ? 'bg-gray-800' : 'bg-[#fcfcfc]';
+            let rightPanelBg = hasText ? '' : (isDarkExport ? '#1f2937' : getPaletteColor(urlsToRender[0] || item.id));
+
+            let tagsHtml = (item.tags || '').split(',').filter(t=>t.trim() && t.trim().toLowerCase()!=='nsfw').map(t=> `<span class="text-[10px] tracking-widest uppercase text-gray-500 font-bold border border-gray-500 px-2 py-1 mr-2 mb-2 inline-block">#${t.trim()}</span>`).join('');
+            let sourceLinkHtml = item.sourceUrl ? `<div class="mt-8 pt-6 border-t border-gray-400" onmousedown="event.stopPropagation()"><a href="${item.sourceUrl}" target="_blank" class="inline-block border border-[#0078D7] text-[#0078D7] hover:bg-[#0078D7] hover:text-white px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition">🔗 OPEN ORIGINAL SOURCE</a></div>` : '';
+
+            let mediaHtml = '';
+            let textHtml = '';
+
+            if (hasMedia) {
+                let gridCols = urlsToRender.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
+                let mediaWidth = hasText ? 'md:w-1/2' : 'w-full';
+                mediaHtml = `<div class="w-full h-[40vh] md:h-full ${mediaWidth} bg-[#111] grid ${gridCols} gap-1 p-1 overflow-hidden">`;
+                
+                urlsToRender.forEach((u) => {
+                    let uType = detectMediaType(u);
+                    let imgBg = urlsToRender.length === 1 ? 'bg-contain' : 'bg-cover';
+                    if (uType === 'image') {
+                        mediaHtml += `<div class="relative w-full h-full bg-[#111] cursor-zoom-in group overflow-hidden block" onclick="openImageViewer('${u}')"><div class="absolute inset-0 ${imgBg} bg-no-repeat bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('${u}')"></div>${urlsToRender.length===1?`<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/30 transition duration-300 pointer-events-none"><span class="bg-black/80 text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase shadow-2xl">🔍 Expand</span></div>`:''}</div>`;
+                    } else if (uType === 'video') {
+                        mediaHtml += `<div class="w-full h-full bg-black flex items-center justify-center" onmousedown="event.stopPropagation()"><video controls class="max-w-full max-h-full w-full h-full object-contain"><source src="${u}"></video></div>`;
+                    } else if (uType === 'hls') {
+                        let rId = `video-${item.id}-${Math.random().toString(36).substr(2, 5)}`;
+                        mediaHtml += `<div class="w-full h-full bg-black flex items-center justify-center" onmousedown="event.stopPropagation()"><video id="${rId}" data-src="${u}" controls class="max-w-full max-h-full w-full h-full object-contain hls-video-dynamic"></video></div>`;
+                    } else if (uType === 'youtube') {
+                        mediaHtml += `<div class="w-full h-full" onmousedown="event.stopPropagation()"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${getYoutubeId(u)}" frameborder="0" allowfullscreen></iframe></div>`;
+                    } else {
+                        mediaHtml += `<div class="w-full h-full bg-blue-900 flex flex-col items-center justify-center p-4 text-center text-white pointer-events-none"><span class="text-3xl mb-2">🌐</span><span class="text-[10px] font-bold">External Source</span></div>`;
+                    }
+                });
+                mediaHtml += `</div>`;
+            }
+
+            if (hasText) {
+                if (!hasMedia) {
+                    textHtml = `
+                        <div class="w-full h-full p-8 md:p-16 flex flex-col overflow-y-auto ${bgClass} justify-center items-center" onmousedown="event.stopPropagation()">
+                            <div class="max-w-5xl w-full">
+                                <div class="mb-6 text-center pointer-events-none">${tagsHtml}</div>
+                                ${titleClean ? `<h3 class="text-4xl md:text-6xl font-bold mb-6 magazine-title leading-tight ${titleColorClass} text-center pointer-events-none">${titleClean}</h3><div class="w-24 h-1 ${dividerColorClass} mx-auto mb-10 pointer-events-none"></div>` : ''}
+                                ${notesClean ? `<div class="text-sm md:text-lg ${textColorClass} leading-relaxed font-light text-justify md:columns-2 gap-12 pointer-events-none">${notesClean.replace(/\n/g, '<br>')}</div>` : ''}
+                                <div class="flex justify-center mt-10">${sourceLinkHtml}</div>
+                            </div>
+                        </div>`;
+                } else {
+                    textHtml = `
+                        <div class="w-full h-[60vh] md:h-full md:w-1/2 p-6 md:p-16 flex flex-col overflow-y-auto pb-32 ${bgClass}" onmousedown="event.stopPropagation()">
+                            <div class="mb-4 pointer-events-none">${tagsHtml}</div>
+                            ${titleClean ? `<h3 class="text-3xl md:text-4xl font-bold mb-4 magazine-title leading-tight ${titleColorClass} pointer-events-none">${titleClean}</h3><div class="w-16 h-1 ${dividerColorClass} mb-6 flex-shrink-0 pointer-events-none"></div>` : ''}
+                            ${notesClean ? `<p class="text-sm md:text-base ${textColorClass} leading-relaxed font-light text-justify pointer-events-none" style="column-count: 1;">${notesClean.replace(/\n/g, '<br>')}</p>` : ''}
+                            ${sourceLinkHtml}
+                        </div>`;
+                }
+            } else if (!hasMedia) {
+                textHtml = `<div class="w-full h-[30vh] md:h-full ${bgClass} flex flex-col items-center justify-center p-12 text-center text-white border-b-4 md:border-b-0 ${isReverse ? 'md:border-l-4' : 'md:border-r-4'} border-[#0078D7]"><span class="text-6xl mb-6 pointer-events-none">📰</span><h2 class="text-3xl font-serif italic leading-tight mb-4 pointer-events-none text-gray-500">Empty Page</h2></div>`;
+            }
+
+            return `
+                <div class="snap-page flex flex-col ${flexDirClass} shadow-2xl overflow-hidden border-gray-700 ${borderDirClass}" style="${rightPanelBg ? `background-color: ${rightPanelBg};` : ''}">
+                    ${mediaHtml}
+                    ${textHtml}
+                </div>
+            `;
         }
 
-        imgView.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) { initialPinchDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); initialScale = zScale; } 
-            else if (e.touches.length === 1) { zPanning = true; zStartX = e.touches[0].clientX - zPointX; zStartY = e.touches[0].clientY - zPointY; }
-        });
-        imgView.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2) { e.preventDefault(); const currentDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zScale = Math.min(Math.max(1, initialScale * (currentDistance / initialPinchDistance)), 4); zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } 
-            else if (e.touches.length === 1 && zPanning) { e.preventDefault(); zPointX = e.touches[0].clientX - zStartX; zPointY = e.touches[0].clientY - zStartY; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; }
-        }, {passive: false});
-        imgView.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) initialPinchDistance = null;
-            if (e.touches.length === 0) { zPanning = false; if(zScale === 1) { zPointX = 0; zPointY = 0; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } }
-        });
-
-        // --- HTML EXPORT ENGINE ---
+        // --- HTML EXPORT ---
         function downloadMagazineHTML() {
             if (!currentMagazine) return;
             const btn = document.getElementById('btnDownloadHtml');
@@ -272,110 +397,33 @@
             const metaItem = allItems.find(i => i.type === 'meta');
             let mediaItems = allItems.filter(i => i.type !== 'meta');
 
-            if (mediaItems.length === 0) {
-                alert("No pages to export.");
-                btn.innerText = "🌐 DOWNLOAD HTML"; btn.disabled = false;
-                return;
-            }
+            if (mediaItems.length === 0) { alert("No pages to export."); btn.innerText = "🌐 DOWNLOAD HTML"; btn.disabled = false; return; }
 
-            let pagesHtml = '';
-            let globalPageCount = 1; 
-
+            let pagesHtml = ''; let globalPageCount = 1; const isDarkModeExport = document.documentElement.classList.contains('dark');
+            
             mediaItems.forEach((item) => {
+                let rawHtml = generatePageHtml(item, globalPageCount, isDarkModeExport);
+                rawHtml = rawHtml.replace(/onclick="openImageViewer\([^)]+\)"/g, ''); 
                 let urlsToRender = item.urls && item.urls.length > 0 ? item.urls : (item.url ? [item.url] : []);
-                
-                let isReverse = (globalPageCount % 2 === 0); 
-                let flexDirClass = isReverse ? 'md:flex-row-reverse' : 'md:flex-row';
-                let borderDirClass = isReverse ? 'border-l-2' : 'border-r-2';
-
-                let mediaHtml = '';
-                if (urlsToRender.length === 0 && item.type === 'text_only') {
-                    mediaHtml = `
-                        <div class="w-full h-[30vh] md:h-full md:w-1/2 bg-[#1a1a1a] flex flex-col items-center justify-center p-12 text-center text-white border-b-4 md:border-b-0 ${isReverse ? 'md:border-l-4' : 'md:border-r-4'} border-[#0078D7]">
-                            <span class="text-6xl mb-6">📰</span>
-                            <h2 class="text-3xl font-serif italic leading-tight mb-4">${item.title || 'Featured Article'}</h2>
-                            <div class="w-12 h-1 bg-white opacity-50 mb-4"></div>
-                            <span class="text-xs tracking-widest uppercase font-bold opacity-70">Text Reading</span>
-                        </div>`;
-                } else {
-                    let gridCols = 'grid-cols-1'; let gridRows = 'grid-rows-1'; let len = urlsToRender.length;
-                    if (len === 2) { gridCols = 'grid-cols-1'; gridRows = 'grid-rows-2'; }
-                    else if (len >= 3 && len <= 4) { gridCols = 'grid-cols-2'; gridRows = 'grid-rows-2'; }
-                    else if (len >= 5 && len <= 6) { gridCols = 'grid-cols-2'; gridRows = 'grid-rows-3'; }
-                    else if (len >= 7) { gridCols = 'grid-cols-2'; gridRows = 'grid-rows-4'; }
-
-                    mediaHtml = `<div class="w-full h-[40vh] md:h-full md:w-1/2 bg-[#111] grid ${gridCols} ${gridRows} gap-1 p-1 overflow-hidden">`;
-                    
-                    urlsToRender.forEach(u => {
-                        let uType = detectMediaType(u);
-                        let bgClass = len === 1 ? 'bg-contain' : 'bg-cover';
-
-                        if (uType === 'image') {
-                            mediaHtml += `
-                            <a href="${u}" target="_blank" class="relative w-full h-full bg-[#111] group overflow-hidden block">
-                                <div class="absolute inset-0 ${bgClass} bg-no-repeat bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('${u}')"></div>
-                            </a>`;
-                        } else if (uType === 'video') {
-                            mediaHtml += `<div class="w-full h-full bg-black flex items-center justify-center"><video controls class="max-w-full max-h-full w-full h-full object-contain"><source src="${u}"></video></div>`;
-                        } else if (uType === 'hls') {
-                            mediaHtml += `<div class="w-full h-full bg-black flex items-center justify-center"><video data-src="${u}" controls class="max-w-full max-h-full w-full h-full object-contain hls-video-dynamic"></video></div>`;
-                        } else if (uType === 'youtube') {
-                            mediaHtml += `<div class="w-full h-full"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${getYoutubeId(u)}" frameborder="0" allowfullscreen></iframe></div>`;
-                        } else {
-                            mediaHtml += `<div class="w-full h-full bg-blue-900 flex flex-col items-center justify-center p-4 text-center text-white"><span class="text-3xl mb-2">🌐</span><span class="text-[10px] font-bold">External Source</span></div>`;
-                        }
-                    });
-                    mediaHtml += `</div>`;
-                }
-
-                let titleClean = item.title && item.title !== 'Tanpa Judul' ? item.title : '';
-                let notesClean = item.notes || '';
-                let isTextEmpty = !titleClean && !notesClean.trim();
-                
-                let rightPanelBg = '#fcfcfc';
-                let rightPanelHtml = '';
-                
-                let tagsHtml = (item.tags || '').split(',').filter(t=>t.trim() && t.trim().toLowerCase()!=='nsfw').map(t=> `<span class="text-[10px] tracking-widest uppercase text-gray-500 font-bold border border-gray-300 px-2 py-1 mr-2 mb-2 inline-block">#${t.trim()}</span>`).join('');
-                
-                let sourceLinkHtml = item.sourceUrl ? `
-                    <div class="mt-8 pt-6 border-t border-gray-200">
-                        <a href="${item.sourceUrl}" target="_blank" class="inline-block border border-[#0078D7] text-[#0078D7] hover:bg-[#0078D7] hover:text-white px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition">
-                            🔗 OPEN ORIGINAL SOURCE
-                        </a>
-                    </div>` : '';
-
-                if (isTextEmpty && !item.sourceUrl) {
-                    let seed = (urlsToRender.length > 0) ? urlsToRender[0] : item.id;
-                    rightPanelBg = getPastelColor(seed);
-                } else {
-                    rightPanelHtml = `
-                        <div class="mb-4">${tagsHtml}</div>
-                        ${titleClean ? `<h3 class="text-3xl md:text-4xl font-bold mb-4 magazine-title leading-tight">${titleClean}</h3><div class="w-16 h-1 bg-black mb-6 flex-shrink-0"></div>` : ''}
-                        ${notesClean ? `<p class="text-sm md:text-base text-gray-700 leading-relaxed font-light text-justify" style="column-count: 1;">${notesClean.replace(/\n/g, '<br>')}</p>` : ''}
-                        ${sourceLinkHtml}
-                    `;
-                }
-
-                pagesHtml += `
-                    <div class="snap-page flex flex-col ${flexDirClass} shadow-2xl overflow-hidden border-gray-200 ${borderDirClass}" style="background-color: ${rightPanelBg};">
-                        ${mediaHtml}
-                        <div class="w-full h-[60vh] md:h-full md:w-1/2 p-6 md:p-16 flex flex-col overflow-y-auto pb-32">
-                            ${rightPanelHtml}
-                        </div>
-                    </div>
-                `;
+                urlsToRender.forEach(u => {
+                    if(detectMediaType(u) === 'image') {
+                        rawHtml = rawHtml.replace(`<div class="relative w-full h-full bg-[#111] cursor-zoom-in group overflow-hidden block"`, `<a href="${u}" target="_blank" class="relative w-full h-full bg-[#111] group overflow-hidden block"`);
+                        rawHtml = rawHtml.replace(`</div></div>`, `</div></a>`); 
+                    }
+                });
+                pagesHtml += rawHtml;
                 globalPageCount++;
             });
 
-            // Template HTML Standalone
             let htmlContent = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="${isDarkModeExport ? 'dark' : ''}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${currentMagazine} - Magazine Export</title>
     <script src="https://cdn.tailwindcss.com"><\/script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: {} } }<\/script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
         body { font-family: 'Lato', sans-serif; background-color: #000; margin: 0; overflow: hidden; }
@@ -385,88 +433,55 @@
         .snap-page { flex: 0 0 100vw; width: 100vw; height: 100vh; scroll-snap-align: center; display: flex; }
     </style>
 </head>
-<body>
+<body class="${isDarkModeExport ? 'bg-gray-900' : 'bg-black'}">
     <div id="readerContent" class="reader-x w-full h-full">
-        <div class="snap-page bg-black flex flex-col items-center justify-center text-white p-8 relative shadow-2xl">
-            <h2 class="text-5xl md:text-8xl mb-4 text-center magazine-title uppercase">${currentMagazine}</h2>
-            <p class="text-xl font-light tracking-widest uppercase mb-12">${mediaItems.length} PAGES</p>
-            <p class="text-sm font-light text-gray-400 max-w-2xl text-center mb-8">${metaItem && metaItem.notes ? metaItem.notes : ''}</p>
-            <div class="animate-pulse mt-8 border border-white rounded-full px-6 py-2 text-xs tracking-widest font-bold">SWIPE LEFT-RIGHT TO READ</div>
+        <div class="snap-page bg-black flex flex-col items-center justify-center text-white p-8 relative shadow-2xl" style="background-color: ${getPaletteColor(currentMagazine)}">
+            <div class="bg-black/50 p-12 backdrop-blur-sm w-full h-full flex flex-col items-center justify-center">
+                <h2 class="text-5xl md:text-8xl mb-4 text-center magazine-title uppercase drop-shadow-lg">${currentMagazine}</h2>
+                <p class="text-xl font-light tracking-widest uppercase mb-12 drop-shadow-md">${mediaItems.length} PAGES</p>
+                <p class="text-sm font-light text-gray-200 max-w-2xl text-center mb-8">${metaItem && metaItem.notes ? metaItem.notes : ''}</p>
+                <div class="animate-pulse mt-8 border border-white rounded-full px-6 py-2 text-xs tracking-widest font-bold">SWIPE OR USE ARROWS<br><span class="text-[9px] mt-2 block opacity-70">PRESS 'M' OR 'ESC' FOR MENU</span></div>
+            </div>
         </div>
         ${pagesHtml}
     </div>
 
     <button id="btnPrev" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❮</button>
     <button id="btnNext" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❯</button>
+    <button onclick="toggleUI()" title="Toggle Menu (M / ESC)" class="fixed bottom-6 right-6 z-[60] bg-white/20 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity duration-300 text-xl shadow-2xl border border-gray-400">👁️</button>
 
     <script>
-        document.querySelectorAll('.hls-video-dynamic').forEach(videoEl => {
-            let src = videoEl.getAttribute('data-src');
-            if (typeof Hls !== 'undefined' && Hls.isSupported()) { 
-                const hls = new Hls(); hls.loadSource(src); hls.attachMedia(videoEl);
-            } 
-            else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = src; }
-        });
+        const magPalette = [];
+        for(let i = 0; i < 128; i++) magPalette.push(\`hsl(\${Math.floor((i/128)*360)}, 80%, 45%)\`);
+        for(let i = 0; i < 128; i++) magPalette.push(\`hsl(\${Math.floor((i/128)*360)}, 65%, 85%)\`);
+        function getPaletteColor(str) { let hash=0; if(!str)str="default"; for(let i=0;i<str.length;i++) hash=str.charCodeAt(i)+((hash<<5)-hash); return magPalette[Math.abs(hash)%256]; }
 
-        const slider = document.getElementById('readerContent');
-        const btnPrev = document.getElementById('btnPrev');
-        const btnNext = document.getElementById('btnNext');
-        let uiTimer = null;
-
-        function resetUI() {
-            btnPrev.classList.remove('opacity-0', 'pointer-events-none');
-            btnNext.classList.remove('opacity-0', 'pointer-events-none');
-            clearTimeout(uiTimer);
-            uiTimer = setTimeout(() => {
-                btnPrev.classList.add('opacity-0', 'pointer-events-none');
-                btnNext.classList.add('opacity-0', 'pointer-events-none');
-            }, 2500);
+        document.querySelectorAll('.hls-video-dynamic').forEach(videoEl => { let src = videoEl.getAttribute('data-src'); if (typeof Hls !== 'undefined' && Hls.isSupported()) { const hls = new Hls(); hls.loadSource(src); hls.attachMedia(videoEl); } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = src; } });
+        const slider = document.getElementById('readerContent'); const btnPrev = document.getElementById('btnPrev'); const btnNext = document.getElementById('btnNext');
+        
+        let isUIVis = true;
+        function toggleUI() {
+            isUIVis = !isUIVis;
+            if(isUIVis){ btnPrev.classList.remove('opacity-0', 'pointer-events-none'); btnNext.classList.remove('opacity-0', 'pointer-events-none'); }
+            else{ btnPrev.classList.add('opacity-0', 'pointer-events-none'); btnNext.classList.add('opacity-0', 'pointer-events-none'); }
         }
 
-        document.addEventListener('mousemove', resetUI);
-        slider.addEventListener('scroll', resetUI);
-        document.addEventListener('click', resetUI);
-        document.addEventListener('touchstart', resetUI, {passive: true});
-
-        function prevPage() { slider.scrollBy({ left: -window.innerWidth, behavior: 'smooth' }); resetUI(); }
-        function nextPage() { slider.scrollBy({ left: window.innerWidth, behavior: 'smooth' }); resetUI(); }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') prevPage();
-            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
-        });
-
-        resetUI();
+        function prevPage() { slider.scrollBy({ left: -window.innerWidth, behavior: 'smooth' }); } 
+        function nextPage() { slider.scrollBy({ left: window.innerWidth, behavior: 'smooth' }); }
+        document.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') prevPage(); if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); } if (e.key === 'Escape' || e.key.toLowerCase() === 'm') toggleUI(); });
     <\/script>
 </body>
 </html>`;
 
-            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url; a.download = `${currentMagazine}_Digital_Mag.html`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `${currentMagazine}_Digital_Mag.html`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
             btn.innerText = "🌐 DOWNLOAD HTML"; btn.disabled = false;
         }
 
-        // --- SAFE MODE LOGIC ---
         function toggleSafeMode() {
             isSafeMode = !isSafeMode;
-            const btn = document.getElementById('safeModeBtn');
-            const icon = document.getElementById('safeModeIcon');
-            const text = document.getElementById('safeModeText');
-
-            if (isSafeMode) {
-                icon.innerText = "🛡️"; text.innerText = "SAFE: ON";
-                btn.classList.remove('text-[#D83B01]', 'border-[#D83B01]');
-                btn.classList.add('text-[#107C10]', 'border-gray-300');
-            } else {
-                icon.innerText = "🔞"; text.innerText = "UNSAFE: OFF";
-                btn.classList.remove('text-[#107C10]', 'border-gray-300');
-                btn.classList.add('text-[#D83B01]', 'border-[#D83B01]');
-            }
+            const btn = document.getElementById('safeModeBtn'); const icon = document.getElementById('safeModeIcon'); const text = document.getElementById('safeModeText');
+            if (isSafeMode) { icon.innerText = "🛡️"; text.innerText = "SAFE: ON"; btn.classList.remove('text-[#D83B01]', 'border-[#D83B01]', 'dark:text-red-400'); btn.classList.add('text-[#107C10]', 'border-gray-300', 'dark:text-green-400'); } 
+            else { icon.innerText = "🔞"; text.innerText = "UNSAFE: OFF"; btn.classList.remove('text-[#107C10]', 'border-gray-300', 'dark:text-green-400'); btn.classList.add('text-[#D83B01]', 'border-[#D83B01]', 'dark:text-red-400'); }
             renderViews();
         }
 
@@ -474,651 +489,223 @@
             let displayData = magData;
             if (isSafeMode) {
                 const nsfwCategories = new Set(magData.filter(i => i.type === 'meta' && (i.tags || '').toLowerCase().includes('nsfw')).map(i => i.category));
-                displayData = displayData.filter(item => {
-                    if ((item.tags || '').toLowerCase().includes('nsfw')) return false;
-                    if (nsfwCategories.has(item.category)) return false;
-                    return true;
-                });
+                displayData = displayData.filter(item => { if ((item.tags || '').toLowerCase().includes('nsfw')) return false; if (nsfwCategories.has(item.category)) return false; return true; });
             }
             return displayData;
         }
 
         function detectMediaType(url) {
-            if (!url) return 'text_only';
-            if (url.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i)) return 'image';
-            if (url.match(/\.(mp3|wav|ogg)(\?.*)?$/i)) return 'audio';
-            if (url.match(/\.(m3u|m3u8)(\?.*)?$/i)) return 'hls';
-            if (url.match(/\.(mp4|webm|gifv)(\?.*)?$/i)) return 'video';
-            const ytMatch = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
-            if (ytMatch && ytMatch[2].length === 11) return 'youtube';
-            return 'iframe'; 
+            if (!url) return 'text_only'; if (url.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i)) return 'image'; if (url.match(/\.(mp3|wav|ogg)(\?.*)?$/i)) return 'audio'; if (url.match(/\.(m3u|m3u8)(\?.*)?$/i)) return 'hls'; if (url.match(/\.(mp4|webm|gifv)(\?.*)?$/i)) return 'video'; const ytMatch = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); if (ytMatch && ytMatch[2].length === 11) return 'youtube'; return 'iframe'; 
         }
         function getYoutubeId(url) { const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); return (match && match[2].length === 11) ? match[2] : null; }
         
         function getThumbnailHtml(item) {
-            let primaryUrl = (item.urls && item.urls.length > 0) ? item.urls[0] : item.url;
-            let type = detectMediaType(primaryUrl);
-
+            let primaryUrl = (item.urls && item.urls.length > 0) ? item.urls[0] : item.url; let type = detectMediaType(primaryUrl);
             if (type === 'image') return `<img src="${primaryUrl}" class="w-full h-full object-cover pointer-events-none">`;
             if (type === 'youtube') return `<img src="https://img.youtube.com/vi/${getYoutubeId(primaryUrl)}/hqdefault.jpg" class="w-full h-full object-cover pointer-events-none">`;
             if (type === 'video' || type === 'hls') return `<video class="w-full h-full object-cover pointer-events-none" muted preload="metadata"><source src="${primaryUrl}#t=1"></video>`;
-            if (type === 'text_only') return `<div class="w-full h-full bg-gray-100 flex flex-col items-center justify-center p-4 text-center pointer-events-none"><span class="text-4xl mb-2">📰</span><span class="text-[10px] font-bold text-gray-500 line-clamp-3">${item.title || 'Note'}</span></div>`;
-            return `<div class="w-full h-full bg-gray-200 flex items-center justify-center text-4xl pointer-events-none">📄</div>`;
+            if (type === 'text_only') return `<div class="w-full h-full bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center p-4 text-center pointer-events-none"><span class="text-4xl mb-2">📰</span><span class="text-[10px] font-bold text-gray-500 dark:text-gray-300 line-clamp-3">${item.title || 'Note'}</span></div>`;
+            return `<div class="w-full h-full ${getPaletteColor(item.id)} flex items-center justify-center text-4xl pointer-events-none text-white">📄</div>`;
         }
 
-        function smartMergeItem(newItem) {
-            if (newItem.type === 'meta') {
-                let existingIndex = magData.findIndex(item => item.type === 'meta' && item.category === newItem.category);
-                if (existingIndex === -1) magData.push(newItem);
-                else {
-                    magData[existingIndex].notes = newItem.notes; 
-                    magData[existingIndex].tags = newItem.tags;
-                }
-            } else {
-                // To avoid duplicate ID issues during imports
-                let existingItem = magData.find(i => i.id === newItem.id);
-                if (!existingItem) {
-                    magData.unshift(newItem);
-                }
-            }
-        }
-
-        function renderViews() {
-            if (currentView === 'shelf') renderShelf();
-            else if (currentView === 'inside') renderInsideMagazine(currentMagazine);
-        }
+        function renderViews() { if (currentView === 'shelf') renderShelf(); else if (currentView === 'inside') renderInsideMagazine(currentMagazine); }
 
         function openShelf() {
             currentView = 'shelf'; currentMagazine = null;
-            document.getElementById('insideView').classList.add('hidden');
-            document.getElementById('shelfView').classList.remove('hidden');
-            
-            const uiTop = document.getElementById('globalHeader');
-            uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
-            
+            document.getElementById('insideView').classList.add('hidden'); document.getElementById('shelfView').classList.remove('hidden');
+            const uiTop = document.getElementById('globalHeader'); uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
+            isUIVisible = true;
             renderViews();
         }
 
-        function openInside(category) {
-            currentView = 'inside'; currentMagazine = category;
-            document.getElementById('shelfView').classList.add('hidden');
-            document.getElementById('insideView').classList.remove('hidden');
-            renderViews();
-        }
+        function openInside(category) { currentView = 'inside'; currentMagazine = category; document.getElementById('shelfView').classList.add('hidden'); document.getElementById('insideView').classList.remove('hidden'); renderViews(); }
 
-        function deleteMagazine(category) {
-            if (confirm(`WARNING!\n\nAre you sure you want to delete the ENTIRE magazine "${category}" and all its pages?\n\nThis action cannot be undone!`)) {
-                magData = magData.filter(i => i.category !== category);
-                saveData();
-                openShelf();
-            }
-        }
+        function deleteMagazine(category) { if (confirm(`WARNING!\n\nAre you sure you want to delete the ENTIRE magazine "${category}" and all its pages?\n\nThis action cannot be undone!`)) { magData = magData.filter(i => i.category !== category); saveData(); openShelf(); } }
 
         function renderShelf() {
-            const grid = document.getElementById('magazineGrid');
-            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-            grid.innerHTML = '';
-
-            const activeData = getFilteredData();
-            const grouped = activeData.reduce((acc, item) => {
-                if (!acc[item.category]) acc[item.category] = [];
-                acc[item.category].push(item); return acc;
-            }, {});
+            const grid = document.getElementById('magazineGrid'); const keyword = document.getElementById('searchInput').value.trim().toLowerCase(); grid.innerHTML = '';
+            const activeData = getFilteredData(); const grouped = activeData.reduce((acc, item) => { if (!acc[item.category]) acc[item.category] = []; acc[item.category].push(item); return acc; }, {});
 
             for (const [category, items] of Object.entries(grouped)) {
-                if (keyword) {
-                    const match = items.some(i => `${i.title} ${i.category} ${i.tags} ${i.notes}`.toLowerCase().includes(keyword));
-                    if (!match) continue;
-                }
-
-                const metaItem = items.find(i => i.type === 'meta');
-                const mediaItems = items.filter(i => i.type !== 'meta');
-                const desc = metaItem ? metaItem.notes : '';
-                const coverItem = mediaItems.find(i => i.isCover) || mediaItems[0];
+                if (keyword && !items.some(i => `${i.title} ${i.category} ${i.tags} ${i.notes}`.toLowerCase().includes(keyword))) continue;
+                const metaItem = items.find(i => i.type === 'meta'); const mediaItems = items.filter(i => i.type !== 'meta'); const desc = metaItem ? metaItem.notes : ''; const coverItem = mediaItems.find(i => i.isCover) || mediaItems[0];
+                let coverMediaHtml = ''; let isTextCover = false;
                 
-                let coverMediaHtml = '';
-                let isTextCover = false;
-
-                if (coverItem && coverItem.type !== 'iframe' && coverItem.type !== 'text_only') {
-                    coverMediaHtml = getThumbnailHtml(coverItem);
-                } else {
-                    coverMediaHtml = `<div class="w-full h-full bg-[#1a1a1a]"></div>`;
-                    isTextCover = true;
+                if (coverItem && coverItem.type !== 'iframe' && coverItem.type !== 'text_only') { 
+                    coverMediaHtml = getThumbnailHtml(coverItem); 
+                } else { 
+                    coverMediaHtml = `<div class="w-full h-full" style="background-color: ${getPaletteColor(category)}"></div>`; 
+                    isTextCover = true; 
                 }
 
-                const card = document.createElement('div');
-                card.className = "group cursor-pointer flex flex-col gap-3 relative";
-                card.onclick = () => openInside(category);
+                const card = document.createElement('div'); card.className = "group cursor-pointer flex flex-col gap-3 relative"; card.onclick = () => openInside(category);
+                let overlayTypoHtml = isTextCover ? `<div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white pointer-events-none"><h3 class="text-white text-4xl font-serif italic mb-4 leading-tight drop-shadow-md">${category}</h3><div class="w-10 h-[1px] bg-white/50 mb-4"></div><span class="text-xs text-white/80 font-light line-clamp-4 leading-relaxed">${desc || 'Empty Edition'}</span></div>` : `<div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors pointer-events-none"></div><div class="absolute bottom-0 left-0 p-6 z-10 w-full dark-glass pointer-events-none"><h3 class="text-white text-3xl font-serif italic mb-2 leading-tight drop-shadow-lg">${category}</h3><div class="w-10 h-[1px] bg-white opacity-50 mb-4"></div><span class="text-white text-[10px] tracking-widest uppercase font-bold opacity-70">${mediaItems.length} Pages</span></div>`;
+                let deleteMagHtml = `<button onclick="deleteMagazine('${category.replace(/'/g, "\\'")}'); event.stopPropagation();" class="absolute top-2 right-2 bg-red-600/80 hover:bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 z-30 transition-colors shadow opacity-0 group-hover:opacity-100">DELETE</button><button onclick="openForm('editMagazine', '${category.replace(/'/g, "\\'")}'); event.stopPropagation();" class="absolute top-10 right-2 bg-blue-600/80 hover:bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 z-30 transition-colors shadow opacity-0 group-hover:opacity-100">EDIT</button>`;
 
-                let overlayTypoHtml = '';
-                if(isTextCover){
-                     overlayTypoHtml = `
-                        <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white pointer-events-none">
-                            <h3 class="text-white text-4xl font-serif italic mb-4 leading-tight">${category}</h3>
-                            <div class="w-10 h-[1px] bg-gray-500 mb-4"></div>
-                            <span class="text-xs text-gray-400 font-light line-clamp-4 leading-relaxed">${desc || 'Empty Edition'}</span>
-                        </div>
-                     `;
-                } else {
-                     overlayTypoHtml = `
-                        <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
-                        <div class="absolute bottom-0 left-0 p-6 z-10 w-full dark-glass pointer-events-none">
-                            <h3 class="text-white text-3xl font-serif italic mb-2 leading-tight drop-shadow-lg">${category}</h3>
-                            <div class="w-10 h-[1px] bg-white opacity-50 mb-4"></div>
-                            <span class="text-white text-[10px] tracking-widest uppercase font-bold opacity-70">${mediaItems.length} Pages</span>
-                        </div>
-                     `;
-                }
-
-                let deleteMagHtml = `
-                    <button onclick="deleteMagazine('${category.replace(/'/g, "\\'")}'); event.stopPropagation();" class="absolute top-2 right-2 bg-red-600/80 hover:bg-red-600 text-white text-[10px] font-bold px-3 py-1.5 z-30 transition-colors shadow opacity-0 group-hover:opacity-100">
-                        DELETE MAGAZINE
-                    </button>
-                    <button onclick="openForm('editMagazine', '${category.replace(/'/g, "\\'")}'); event.stopPropagation();" class="absolute top-10 right-2 bg-blue-600/80 hover:bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 z-30 transition-colors shadow opacity-0 group-hover:opacity-100">
-                        EDIT DETAILS
-                    </button>
-                `;
-
-                card.innerHTML = `
-                    <div class="relative w-full aspect-[3/4] overflow-hidden shadow-xl border-4 border-white bg-white hover:border-black transition-colors duration-300">
-                        ${coverMediaHtml}
-                        ${overlayTypoHtml}
-                        ${deleteMagHtml}
-                    </div>
-                `;
+                card.innerHTML = `<div class="relative w-full aspect-[3/4] overflow-hidden shadow-xl border-4 border-white dark:border-gray-800 bg-white hover:border-black transition-colors duration-300">${coverMediaHtml}${overlayTypoHtml}${deleteMagHtml}</div>`;
                 grid.appendChild(card);
             }
         }
 
         function renderInsideMagazine(category) {
-            const grid = document.getElementById('pageGrid');
-            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-            grid.innerHTML = '';
-            
-            let allItems = getFilteredData().filter(i => i.category === category);
-            const metaItem = allItems.find(i => i.type === 'meta');
-            let mediaItems = allItems.filter(i => i.type !== 'meta');
-
-            document.getElementById('insideTitle').innerText = category;
-            document.getElementById('insideDesc').innerText = metaItem ? metaItem.notes : '';
-            
+            const grid = document.getElementById('pageGrid'); const keyword = document.getElementById('searchInput').value.trim().toLowerCase(); grid.innerHTML = '';
+            let allItems = getFilteredData().filter(i => i.category === category); const metaItem = allItems.find(i => i.type === 'meta'); let mediaItems = allItems.filter(i => i.type !== 'meta');
+            document.getElementById('insideTitle').innerText = category; document.getElementById('insideDesc').innerText = metaItem ? metaItem.notes : '';
             if (keyword) mediaItems = mediaItems.filter(i => `${i.title} ${i.tags} ${i.notes}`.toLowerCase().includes(keyword));
-            
             document.getElementById('insideCount').innerText = `${mediaItems.length} Pages`;
-
-            if (mediaItems.length === 0) {
-                grid.innerHTML = `<p class="col-span-4 text-gray-500 mt-4">No pages yet. Click the "+ ADD PAGE" button above.</p>`;
-                return;
-            }
+            if (mediaItems.length === 0) { grid.innerHTML = `<p class="col-span-4 text-gray-500 dark:text-gray-400 mt-4">No pages yet. Click the "+ ADD PAGE" button above.</p>`; return; }
 
             mediaItems.forEach((item, index) => {
-                const isCover = item.isCover ? true : false;
-                const isNsfw = (item.tags || '').toLowerCase().includes('nsfw');
-                
-                const card = document.createElement('div');
-                card.className = `relative w-full aspect-square overflow-hidden shadow border border-gray-200 group bg-black`;
-                
+                const isCover = item.isCover ? true : false; const isNsfw = (item.tags || '').toLowerCase().includes('nsfw');
+                const card = document.createElement('div'); card.className = `relative w-full aspect-square overflow-hidden shadow border border-gray-200 dark:border-gray-700 group bg-black`;
                 card.innerHTML = `
-                    <div class="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity overflow-hidden flex items-center justify-center">
-                        ${getThumbnailHtml(item)}
-                    </div>
-                    <div class="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 w-full flex flex-wrap justify-end gap-1">
+                    <div class="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity overflow-hidden flex items-center justify-center">${getThumbnailHtml(item)}</div>
+                    ${index > 0 ? `<button onclick="movePage('${item.id}', -1); event.stopPropagation();" class="absolute left-1 top-1/2 -translate-y-1/2 bg-black/80 text-white w-6 h-6 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 hover:bg-[#0078D7] transition-all z-20">❮</button>` : ''}
+                    ${index < mediaItems.length - 1 ? `<button onclick="movePage('${item.id}', 1); event.stopPropagation();" class="absolute right-1 top-1/2 -translate-y-1/2 bg-black/80 text-white w-6 h-6 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 hover:bg-[#0078D7] transition-all z-20">❯</button>` : ''}
+                    <div class="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 w-full flex flex-wrap justify-end gap-1 z-30">
                         <button onclick="openForm('edit', '${item.id}'); event.stopPropagation();" class="text-[10px] text-blue-400 font-bold hover:text-blue-300 px-1">EDIT</button>
                         <button onclick="deletePage('${item.id}'); event.stopPropagation();" class="text-[10px] text-red-400 font-bold hover:text-red-300 px-1">DELETE</button>
-                        <button onclick="setCover('${item.id}', '${category.replace(/'/g, "\\'")}'); event.stopPropagation();" class="text-[10px] ${isCover ? 'text-green-400' : 'text-white'} font-bold hover:text-green-400 px-1">
-                            ${isCover ? '★ COVER' : 'SET AS COVER'}
-                        </button>
+                        <button onclick="setCover('${item.id}', '${category.replace(/'/g, "\\'")}'); event.stopPropagation();" class="text-[10px] ${isCover ? 'text-green-400' : 'text-white'} font-bold hover:text-green-400 px-1">${isCover ? '★ COVER' : 'SET AS COVER'}</button>
                     </div>
-                    <div class="absolute bottom-0 w-full p-2 bg-gradient-to-t from-black to-transparent pointer-events-none">
-                        <p class="text-white text-[10px] font-bold truncate">
-                            ${isNsfw ? '🔞 ' : ''}${item.title || 'Page ' + (mediaItems.length - index)}
-                        </p>
-                    </div>
+                    <div class="absolute bottom-0 w-full p-2 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"><p class="text-white text-[10px] font-bold truncate">${isNsfw ? '🔞 ' : ''}${item.title || 'Page ' + (mediaItems.length - index)}</p></div>
                 `;
                 grid.appendChild(card);
             });
         }
 
-        function setCover(id, category) {
-            magData.forEach(i => { if (i.category === category) i.isCover = false; }); 
-            const target = magData.find(i => i.id === id);
-            if (target) target.isCover = true;
-            saveData();
-        }
-
-        function deletePage(id) {
-            if (confirm("Delete this page from the magazine?")) {
-                magData = magData.filter(i => i.id !== id);
-                saveData();
-            }
-        }
-
-        // --- 3. READER MODE & NAVIGASI TOMBOL ---
-        function resetReaderUI() {
-            const uiBottom = document.getElementById('readerUI');
-            const uiTop = document.getElementById('globalHeader');
-            const btnPrev = document.getElementById('btnPrevPage');
-            const btnNext = document.getElementById('btnNextPage');
-            
-            if (!uiBottom || currentView !== 'reader') return;
-            
-            uiBottom.classList.remove('opacity-0', 'pointer-events-none');
-            uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
-            if(btnPrev) btnPrev.classList.remove('opacity-0', 'pointer-events-none');
-            if(btnNext) btnNext.classList.remove('opacity-0', 'pointer-events-none');
-
-            clearTimeout(readerUITimer);
-            readerUITimer = setTimeout(() => {
-                uiBottom.classList.add('opacity-0', 'pointer-events-none');
-                uiTop.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
-                if(btnPrev) btnPrev.classList.add('opacity-0', 'pointer-events-none');
-                if(btnNext) btnNext.classList.add('opacity-0', 'pointer-events-none');
-            }, 2500);
-        }
-
-        document.getElementById('readerView').addEventListener('mousemove', resetReaderUI);
-        document.getElementById('readerView').addEventListener('click', resetReaderUI);
-        document.getElementById('readerView').addEventListener('touchstart', resetReaderUI, {passive: true});
-        document.getElementById('readerContent').addEventListener('scroll', resetReaderUI, {passive: true});
-
-        function prevPage() {
-            const slider = document.getElementById('readerContent');
-            const walk = currentReaderDirection === 'x' ? window.innerWidth : window.innerHeight;
-            if (currentReaderDirection === 'x') {
-                slider.scrollBy({ left: -walk, behavior: 'smooth' });
-            } else {
-                slider.scrollBy({ top: -walk, behavior: 'smooth' });
-            }
-            resetReaderUI();
-        }
-
-        function nextPage() {
-            const slider = document.getElementById('readerContent');
-            const walk = currentReaderDirection === 'x' ? window.innerWidth : window.innerHeight;
-            if (currentReaderDirection === 'x') {
-                slider.scrollBy({ left: walk, behavior: 'smooth' });
-            } else {
-                slider.scrollBy({ top: walk, behavior: 'smooth' });
-            }
-            resetReaderUI();
-        }
+        function prevPage() { const slider = document.getElementById('readerContent'); const walk = currentReaderDirection === 'x' ? window.innerWidth : window.innerHeight; if (currentReaderDirection === 'x') { slider.scrollBy({ left: -walk, behavior: 'smooth' }); } else { slider.scrollBy({ top: -walk, behavior: 'smooth' }); } }
+        function nextPage() { const slider = document.getElementById('readerContent'); const walk = currentReaderDirection === 'x' ? window.innerWidth : window.innerHeight; if (currentReaderDirection === 'x') { slider.scrollBy({ left: walk, behavior: 'smooth' }); } else { slider.scrollBy({ top: walk, behavior: 'smooth' }); } }
 
         document.addEventListener('keydown', (e) => {
             if (currentView !== 'reader') return;
             if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevPage();
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
-                e.preventDefault(); 
-                nextPage();
-            }
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextPage(); }
+            if (e.key === 'Escape' || e.key.toLowerCase() === 'm') toggleReaderUI();
         });
 
         function startReading() {
             if (!currentMagazine) return;
-            const content = document.getElementById('readerContent');
-            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-            
-            let mediaItems = getFilteredData().filter(i => i.category === currentMagazine && i.type !== 'meta');
-            if (keyword) mediaItems = mediaItems.filter(i => `${i.title} ${i.tags} ${i.notes}`.toLowerCase().includes(keyword));
-            
+            const content = document.getElementById('readerContent'); const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            let mediaItems = getFilteredData().filter(i => i.category === currentMagazine && i.type !== 'meta'); if (keyword) mediaItems = mediaItems.filter(i => `${i.title} ${i.tags} ${i.notes}`.toLowerCase().includes(keyword));
             if (mediaItems.length === 0) return alert("No pages available to read.");
+            currentView = 'reader'; content.innerHTML = ''; activeHlsEngines.forEach(eng => eng.destroy()); activeHlsEngines = [];
 
-            currentView = 'reader'; 
-            content.innerHTML = '';
-            activeHlsEngines.forEach(eng => eng.destroy()); activeHlsEngines = [];
+            const isDark = document.documentElement.classList.contains('dark');
+            let coverColor = getPaletteColor(currentMagazine);
 
             content.innerHTML += `
-                <div class="snap-page bg-black flex flex-col items-center justify-center text-white p-8 relative shadow-2xl pointer-events-none">
-                    <h2 class="text-5xl md:text-8xl mb-4 text-center magazine-title uppercase">${currentMagazine}</h2>
-                    <p class="text-xl font-light tracking-widest uppercase mb-12">${mediaItems.length} PAGES</p>
-                    <div class="animate-pulse mt-8 border border-white rounded-full px-6 py-2 text-xs tracking-widest font-bold">
-                        SWIPE TO READ
+                <div class="snap-page flex flex-col items-center justify-center text-white p-8 relative shadow-2xl pointer-events-none" style="background-color: ${coverColor}">
+                    <div class="bg-black/50 p-12 backdrop-blur-sm w-full h-full flex flex-col items-center justify-center">
+                        <h2 class="text-5xl md:text-8xl mb-4 text-center magazine-title uppercase drop-shadow-lg">${currentMagazine}</h2>
+                        <p class="text-xl font-light tracking-widest uppercase mb-12 drop-shadow-md">${mediaItems.length} PAGES</p>
+                        <div class="animate-pulse mt-8 border border-white rounded-full px-6 py-2 text-xs tracking-widest font-bold text-center">
+                            SWIPE OR USE ARROWS TO READ<br><span class="text-[9px] mt-2 block opacity-70">PRESS 'M' OR 'ESC' FOR MENU</span>
+                        </div>
                     </div>
                 </div>
             `;
 
             let globalPageCount = 1;
-
             mediaItems.forEach((item) => {
-                let urlsToRender = item.urls && item.urls.length > 0 ? item.urls : (item.url ? [item.url] : []);
-                
-                let isReverse = (globalPageCount % 2 === 0); 
-                let flexDirClass = isReverse ? 'md:flex-row-reverse' : 'md:flex-row';
-                let borderDirClass = isReverse ? 'border-l-2' : 'border-r-2';
-
-                let mediaHtml = '';
-                if (urlsToRender.length === 0 && item.type === 'text_only') {
-                    mediaHtml = `
-                        <div class="w-full h-[30vh] md:h-full md:w-1/2 bg-[#1a1a1a] flex flex-col items-center justify-center p-12 text-center text-white border-b-4 md:border-b-0 ${isReverse ? 'md:border-l-4' : 'md:border-r-4'} border-[#0078D7]">
-                            <span class="text-6xl mb-6 pointer-events-none">📰</span>
-                            <h2 class="text-3xl font-serif italic leading-tight mb-4 pointer-events-none">${item.title || 'Featured Article'}</h2>
-                            <div class="w-12 h-1 bg-white opacity-50 mb-4 pointer-events-none"></div>
-                            <span class="text-xs tracking-widest uppercase font-bold opacity-70 pointer-events-none">Text Reading</span>
-                        </div>`;
-                } else {
-                    let gridCols = 'grid-cols-1';
-                    let gridRows = 'grid-rows-1';
-                    let len = urlsToRender.length;
-                    
-                    if (len === 2) { gridCols = 'grid-cols-1'; gridRows = 'grid-rows-2'; }
-                    else if (len >= 3 && len <= 4) { gridCols = 'grid-cols-2'; gridRows = 'grid-rows-2'; }
-                    else if (len >= 5 && len <= 6) { gridCols = 'grid-cols-2'; gridRows = 'grid-rows-3'; }
-                    else if (len >= 7) { gridCols = 'grid-cols-2'; gridRows = 'grid-rows-4'; }
-
-                    mediaHtml = `<div class="w-full h-[40vh] md:h-full md:w-1/2 bg-[#111] grid ${gridCols} ${gridRows} gap-1 p-1 overflow-hidden">`;
-                    
-                    urlsToRender.forEach(u => {
-                        let uType = detectMediaType(u);
-                        let bgClass = len === 1 ? 'bg-contain' : 'bg-cover';
-
-                        if (uType === 'image') {
-                            mediaHtml += `
-                            <div class="relative w-full h-full bg-[#111] cursor-zoom-in group overflow-hidden" onclick="openImageViewer('${u}')">
-                                <div class="absolute inset-0 ${bgClass} bg-no-repeat bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('${u}')"></div>
-                                ${len === 1 ? `<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/30 transition duration-300 pointer-events-none">
-                                    <span class="bg-black/80 text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase shadow-2xl">🔍 Expand</span>
-                                </div>` : ''}
-                            </div>`;
-                        } else if (uType === 'video') {
-                            mediaHtml += `<div class="w-full h-full bg-black flex items-center justify-center" onmousedown="event.stopPropagation()"><video controls class="max-w-full max-h-full w-full h-full object-contain"><source src="${u}"></video></div>`;
-                        } else if (uType === 'hls') {
-                            let rId = `video-${item.id}-${Math.random().toString(36).substr(2, 5)}`;
-                            mediaHtml += `<div class="w-full h-full bg-black flex items-center justify-center" onmousedown="event.stopPropagation()"><video id="${rId}" data-src="${u}" controls class="max-w-full max-h-full w-full h-full object-contain hls-video-dynamic"></video></div>`;
-                        } else if (uType === 'youtube') {
-                            mediaHtml += `<div class="w-full h-full" onmousedown="event.stopPropagation()"><iframe class="w-full h-full" src="https://www.youtube.com/embed/${getYoutubeId(u)}" frameborder="0" allowfullscreen></iframe></div>`;
-                        } else {
-                            mediaHtml += `<div class="w-full h-full bg-blue-900 flex flex-col items-center justify-center p-4 text-center text-white pointer-events-none"><span class="text-3xl mb-2">🌐</span><span class="text-[10px] font-bold">External Source</span></div>`;
-                        }
-                    });
-                    mediaHtml += `</div>`;
-                }
-
-                let titleClean = item.title && item.title !== 'Tanpa Judul' ? item.title : '';
-                let notesClean = item.notes || '';
-                let isTextEmpty = !titleClean && !notesClean.trim();
-                
-                let rightPanelBg = '#fcfcfc';
-                let rightPanelHtml = '';
-                
-                let tagsHtml = (item.tags || '').split(',').filter(t=>t.trim() && t.trim().toLowerCase()!=='nsfw').map(t=> `<span class="text-[10px] tracking-widest uppercase text-gray-500 font-bold border border-gray-300 px-2 py-1 mr-2 mb-2 inline-block">#${t.trim()}</span>`).join('');
-                
-                let sourceLinkHtml = item.sourceUrl ? `
-                    <div class="mt-8 pt-6 border-t border-gray-200" onmousedown="event.stopPropagation()">
-                        <a href="${item.sourceUrl}" target="_blank" class="inline-block border border-[#0078D7] text-[#0078D7] hover:bg-[#0078D7] hover:text-white px-4 py-2 text-[10px] font-bold tracking-widest uppercase transition">
-                            🔗 OPEN ORIGINAL SOURCE
-                        </a>
-                    </div>` : '';
-
-                if (isTextEmpty && !item.sourceUrl) {
-                    let seed = (urlsToRender.length > 0) ? urlsToRender[0] : item.id;
-                    rightPanelBg = getPastelColor(seed);
-                } else {
-                    rightPanelHtml = `
-                        <div class="mb-4 pointer-events-none">${tagsHtml}</div>
-                        ${titleClean ? `<h3 class="text-3xl md:text-4xl font-bold mb-4 magazine-title leading-tight pointer-events-none">${titleClean}</h3><div class="w-16 h-1 bg-black mb-6 flex-shrink-0 pointer-events-none"></div>` : ''}
-                        ${notesClean ? `<p class="text-sm md:text-base text-gray-700 leading-relaxed font-light text-justify pointer-events-none" style="column-count: 1;">${notesClean.replace(/\n/g, '<br>')}</p>` : ''}
-                        ${sourceLinkHtml}
-                    `;
-                }
-
-                content.innerHTML += `
-                    <div class="snap-page flex flex-col ${flexDirClass} shadow-2xl overflow-hidden border-gray-200 ${borderDirClass}" style="background-color: ${rightPanelBg};">
-                        ${mediaHtml}
-                        <div class="w-full h-[60vh] md:h-full md:w-1/2 p-6 md:p-16 flex flex-col overflow-y-auto pb-32" onmousedown="event.stopPropagation()">
-                            ${rightPanelHtml}
-                        </div>
-                    </div>
-                `;
+                content.innerHTML += generatePageHtml(item, globalPageCount, isDark);
                 globalPageCount++;
             });
 
-            document.getElementById('readerView').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
-            const btn = document.getElementById('btnReaderMode');
-            btn.innerText = currentReaderDirection === 'x' ? '↕️ VERTICAL SCROLL' : '↔️ HORIZONTAL FLIP';
-
-            document.querySelectorAll('.hls-video-dynamic').forEach(videoEl => {
-                let src = videoEl.getAttribute('data-src');
-                if (Hls.isSupported()) { 
-                    const hls = new Hls(); hls.loadSource(src); hls.attachMedia(videoEl); activeHlsEngines.push(hls); 
-                } 
-                else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = src; }
-            });
+            document.getElementById('readerView').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+            const btn = document.getElementById('btnReaderMode'); btn.innerText = currentReaderDirection === 'x' ? '↕️ VERTICAL SCROLL' : '↔️ HORIZONTAL FLIP';
+            document.querySelectorAll('.hls-video-dynamic').forEach(videoEl => { let src = videoEl.getAttribute('data-src'); if (Hls.isSupported()) { const hls = new Hls(); hls.loadSource(src); hls.attachMedia(videoEl); activeHlsEngines.push(hls); } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = src; } });
             
             applyReaderDirection();
-            resetReaderUI(); 
-        }
-
-        function toggleReaderMode() {
-            currentReaderDirection = currentReaderDirection === 'x' ? 'y' : 'x';
-            const btn = document.getElementById('btnReaderMode');
-            btn.innerText = currentReaderDirection === 'x' ? '↕️ VERTICAL SCROLL' : '↔️ HORIZONTAL FLIP';
-            applyReaderDirection();
-        }
-
-        function applyReaderDirection() {
-            const content = document.getElementById('readerContent');
-            if (currentReaderDirection === 'x') {
-                content.classList.remove('reader-y'); content.classList.add('reader-x');
-            } else {
-                content.classList.remove('reader-x'); content.classList.add('reader-y');
-            }
-        }
-
-        function closeReader() {
-            currentView = 'inside'; 
-            clearTimeout(readerUITimer); 
             
-            const uiTop = document.getElementById('globalHeader');
-            uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
-
-            document.getElementById('readerView').classList.add('hidden'); 
-            document.getElementById('readerContent').innerHTML = '';
-            document.body.style.overflow = 'auto';
-            activeHlsEngines.forEach(eng => eng.destroy()); activeHlsEngines = [];
+            // Force show UI on start
+            isUIVisible = false; 
+            toggleReaderUI(); 
         }
 
+        function toggleReaderMode() { currentReaderDirection = currentReaderDirection === 'x' ? 'y' : 'x'; const btn = document.getElementById('btnReaderMode'); btn.innerText = currentReaderDirection === 'x' ? '↕️ VERTICAL SCROLL' : '↔️ HORIZONTAL FLIP'; applyReaderDirection(); }
+        function applyReaderDirection() { const content = document.getElementById('readerContent'); if (currentReaderDirection === 'x') { content.classList.remove('reader-y'); content.classList.add('reader-x'); } else { content.classList.remove('reader-x'); content.classList.add('reader-y'); } }
+        function closeReader() { currentView = 'inside'; const uiTop = document.getElementById('globalHeader'); uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none'); document.getElementById('readerView').classList.add('hidden'); document.getElementById('readerContent').innerHTML = ''; document.body.style.overflow = 'auto'; activeHlsEngines.forEach(eng => eng.destroy()); activeHlsEngines = []; }
         function closeToShelf() { closeReader(); openShelf(); }
 
         function openForm(mode, editId = null) { 
-            currentFormMode = mode;
-            document.getElementById('mediaForm').reset();
-            document.getElementById('nsfwCheckbox').checked = false;
-            document.getElementById('editIdInput').value = '';
-
-            const magFields = document.getElementById('magazineFields');
-            const pageFields = document.getElementById('pageFields');
-            const btnSubmit = document.getElementById('btnSubmitForm');
+            currentFormMode = mode; document.getElementById('mediaForm').reset(); document.getElementById('nsfwCheckbox').checked = false; document.getElementById('editIdInput').value = '';
+            const magFields = document.getElementById('magazineFields'); const pageFields = document.getElementById('pageFields'); const btnSubmit = document.getElementById('btnSubmitForm');
             
-            if (mode === 'magazine') {
-                document.getElementById('formTitle').innerText = "Create New Magazine";
-                magFields.classList.remove('hidden');
-                pageFields.classList.add('hidden');
-                btnSubmit.innerText = "CREATE MAGAZINE"; 
-            } 
-            else if (mode === 'editMagazine') {
-                document.getElementById('formTitle').innerText = `Edit Magazine`;
-                magFields.classList.remove('hidden');
-                pageFields.classList.add('hidden');
-                
-                const meta = magData.find(i => i.type === 'meta' && i.category === editId);
-                if (meta) {
-                    document.getElementById('magNameInput').value = meta.category;
-                    document.getElementById('magDescInput').value = meta.notes || '';
-                    document.getElementById('oldCategoryInput').value = meta.category;
-                    document.getElementById('nsfwCheckbox').checked = (meta.tags || '').toLowerCase().includes('nsfw');
-                }
-                btnSubmit.innerText = "SAVE CHANGES";
-            }
-            else if (mode === 'edit') {
-                document.getElementById('formTitle').innerText = `Edit Page`;
-                magFields.classList.add('hidden');
-                pageFields.classList.remove('hidden');
-                
-                const item = magData.find(i => i.id === editId);
-                if (item) {
-                    document.getElementById('editIdInput').value = item.id;
-                    document.getElementById('urlInput').value = (item.urls && item.urls.length > 0) ? item.urls.join('\n') : (item.url || '');
-                    document.getElementById('sourceUrlInput').value = item.sourceUrl || '';
-                    document.getElementById('titleInput').value = item.title || '';
-                    document.getElementById('notesInput').value = item.notes || '';
-                    document.getElementById('tagsInput').value = (item.tags || '').split(',').map(t=>t.trim()).filter(t=>t.toLowerCase()!=='nsfw').join(', ');
-                    document.getElementById('nsfwCheckbox').checked = (item.tags || '').toLowerCase().includes('nsfw');
-                }
-                btnSubmit.innerText = "SAVE CHANGES";
-            }
-            else {
-                document.getElementById('formTitle').innerText = `Add Page`;
-                magFields.classList.add('hidden');
-                pageFields.classList.remove('hidden');
-                btnSubmit.innerText = "SAVE PAGE";
-            }
+            if (mode === 'magazine') { document.getElementById('formTitle').innerText = "Create New Magazine"; magFields.classList.remove('hidden'); pageFields.classList.add('hidden'); btnSubmit.innerText = "CREATE MAGAZINE"; } 
+            else if (mode === 'editMagazine') { document.getElementById('formTitle').innerText = `Edit Magazine`; magFields.classList.remove('hidden'); pageFields.classList.add('hidden'); const meta = magData.find(i => i.type === 'meta' && i.category === editId); if (meta) { document.getElementById('magNameInput').value = meta.category; document.getElementById('magDescInput').value = meta.notes || ''; document.getElementById('oldCategoryInput').value = meta.category; document.getElementById('nsfwCheckbox').checked = (meta.tags || '').toLowerCase().includes('nsfw'); } btnSubmit.innerText = "SAVE CHANGES"; }
+            else if (mode === 'edit') { document.getElementById('formTitle').innerText = `Edit Page`; magFields.classList.add('hidden'); pageFields.classList.remove('hidden'); const item = magData.find(i => i.id === editId); if (item) { document.getElementById('editIdInput').value = item.id; document.getElementById('urlInput').value = (item.urls && item.urls.length > 0) ? item.urls.join('\n') : (item.url || ''); document.getElementById('sourceUrlInput').value = item.sourceUrl || ''; document.getElementById('titleInput').value = item.title || ''; document.getElementById('notesInput').value = item.notes || ''; document.getElementById('tagsInput').value = (item.tags || '').split(',').map(t=>t.trim()).filter(t=>t.toLowerCase()!=='nsfw').join(', '); document.getElementById('nsfwCheckbox').checked = (item.tags || '').toLowerCase().includes('nsfw'); } btnSubmit.innerText = "SAVE CHANGES"; }
+            else { document.getElementById('formTitle').innerText = `Add Page`; magFields.classList.add('hidden'); pageFields.classList.remove('hidden'); btnSubmit.innerText = "SAVE PAGE"; }
             document.getElementById('formModal').classList.remove('hidden'); 
         }
         
         window.openForm = openForm;
-
         function closeForm() { document.getElementById('formModal').classList.add('hidden'); }
 
-        document.getElementById('mediaForm').addEventListener('submit', function(e) {
+        document.getElementById('mediaForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const btnSubmit = document.getElementById('btnSubmitForm');
+            let originalText = btnSubmit.innerText;
+            btnSubmit.innerText = "⏳ PROCESSING...";
+            btnSubmit.disabled = true;
 
-            let tagsArray = document.getElementById('tagsInput').value.trim().split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw');
-            if (document.getElementById('nsfwCheckbox').checked) tagsArray.push('nsfw');
-            let finalTags = tagsArray.join(', ');
+            try {
+                let tagsArray = document.getElementById('tagsInput').value.trim().split(',').map(t => t.trim()).filter(t => t && t.toLowerCase() !== 'nsfw');
+                if (document.getElementById('nsfwCheckbox').checked) tagsArray.push('nsfw'); let finalTags = tagsArray.join(', ');
 
-            if (currentFormMode === 'magazine' || currentFormMode === 'editMagazine') {
-                let magName = document.getElementById('magNameInput').value.trim();
-                
-                if(!magName) {
-                    alert("Magazine name is required!");
-                    return;
-                }
-                
-                if (currentFormMode === 'editMagazine') {
-                    let oldCategory = document.getElementById('oldCategoryInput').value;
-                    magData.forEach(i => {
-                        if (i.category === oldCategory) i.category = magName;
-                        if (i.type === 'meta' && i.category === magName) {
-                            i.notes = document.getElementById('magDescInput').value.trim();
-                            i.tags = finalTags;
-                        }
-                    });
+                if (currentFormMode === 'magazine' || currentFormMode === 'editMagazine') {
+                    let magName = document.getElementById('magNameInput').value.trim();
+                    if(!magName) { alert("Magazine name is required!"); return; }
+                    if (currentFormMode === 'editMagazine') { let oldCategory = document.getElementById('oldCategoryInput').value; magData.forEach(i => { if (i.category === oldCategory) i.category = magName; if (i.type === 'meta' && i.category === magName) { i.notes = document.getElementById('magDescInput').value.trim(); i.tags = finalTags; } }); } 
+                    else { let newMeta = { id: Date.now().toString(), type: 'meta', category: magName, notes: document.getElementById('magDescInput').value.trim(), tags: finalTags, createdAt: new Date().toISOString() }; magData.push(newMeta); }
+                    saveData(); closeForm(); openShelf();
                 } else {
-                    let newMeta = {
-                        id: Date.now().toString(), type: 'meta', category: magName,
-                        notes: document.getElementById('magDescInput').value.trim(),
-                        tags: finalTags,
-                        createdAt: new Date().toISOString()
-                    };
-                    magData.push(newMeta);
-                }
-                
-                saveData(); closeForm(); openShelf();
-                
-            } else {
-                let rawInput = document.getElementById('urlInput').value.trim();
-                let rawUrls = rawInput.split('\n').map(u => u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1')).filter(u => u !== '');
-                
-                let sourceUrl = document.getElementById('sourceUrlInput').value.trim();
-                let inputNotes = document.getElementById('notesInput').value.trim();
-                let inputTitle = document.getElementById('titleInput').value.trim();
+                    let rawInput = document.getElementById('urlInput').value.trim(); let rawUrls = rawInput.split('\n').map(u => u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1')).filter(u => u !== '');
+                    let sourceUrl = document.getElementById('sourceUrlInput').value.trim(); let inputNotes = document.getElementById('notesInput').value.trim(); let inputTitle = document.getElementById('titleInput').value.trim();
+                    if(rawUrls.length === 0 && !inputNotes && !sourceUrl){ alert("Please provide at least a Media Link OR an Article Note."); return; }
 
-                if(rawUrls.length === 0 && !inputNotes && !sourceUrl){
-                    alert("Please provide at least a Media Link OR an Article Note.");
-                    return;
-                }
-
-                let textChunks = splitTextIntoChunks(inputNotes, 1000); 
-                let mediaChunks = [];
-                
-                if (rawUrls.length === 0) {
-                    mediaChunks.push([]);
-                } else {
-                    for (let i = 0; i < rawUrls.length; i += 4) {
-                        mediaChunks.push(rawUrls.slice(i, i + 4));
-                    }
-                }
-
-                let numPages = Math.max(textChunks.length, mediaChunks.length, 1);
-                let generatedItems = [];
-
-                for (let j = 0; j < numPages; j++) {
-                    let chunkText = textChunks[j] || '';
-                    let chunkUrls = mediaChunks[j] || mediaChunks[0] || [];
-                    let primaryUrl = chunkUrls.length > 0 ? chunkUrls[0] : '';
+                    let mediaOrientations = await Promise.all(rawUrls.map(u => getOrientation(u)));
+                    let mediaChunks = []; let currentMChunk = [];
                     
-                    let chunkTitle = inputTitle;
-                    if (inputTitle && j > 0) chunkTitle = `${inputTitle} (Continued ${j+1})`;
-
-                    let newPage = {
-                        id: Date.now().toString() + "_" + j, 
-                        url: primaryUrl, 
-                        urls: chunkUrls, 
-                        sourceUrl: sourceUrl,
-                        type: detectMediaType(primaryUrl),
-                        category: currentMagazine,
-                        title: chunkTitle, 
-                        tags: finalTags,
-                        notes: chunkText,
-                        isCover: false, 
-                        createdAt: new Date().toISOString()
-                    };
-                    generatedItems.push(newPage);
-                }
-
-                if (currentFormMode === 'edit') {
-                    let editId = document.getElementById('editIdInput').value;
-                    let itemIndex = magData.findIndex(i => i.id === editId);
-                    if (itemIndex > -1) {
-                        magData.splice(itemIndex, 1, ...generatedItems);
+                    for (let i = 0; i < rawUrls.length; i++) {
+                        let u = rawUrls[i]; let ori = mediaOrientations[i];
+                        if (ori === 'landscape') { if (currentMChunk.length > 0) { mediaChunks.push(currentMChunk); currentMChunk = []; } mediaChunks.push([u]); } 
+                        else { currentMChunk.push(u); if (currentMChunk.length === 2) { mediaChunks.push(currentMChunk); currentMChunk = []; } }
                     }
-                } else {
-                    magData.unshift(...generatedItems);
+                    if (currentMChunk.length > 0) mediaChunks.push(currentMChunk);
+                    if (mediaChunks.length === 0) mediaChunks.push([]);
+
+                    let textChunks = splitTextIntoChunks(inputNotes, 1500); 
+                    let numPages = Math.max(textChunks.length, mediaChunks.length, 1);
+                    let generatedItems = [];
+
+                    for (let j = 0; j < numPages; j++) {
+                        let chunkText = textChunks[j] || ''; let chunkUrls = mediaChunks[j] || mediaChunks[0] || []; let primaryUrl = chunkUrls.length > 0 ? chunkUrls[0] : '';
+                        let chunkTitle = inputTitle; if (inputTitle && j > 0) chunkTitle = `${inputTitle} (Continued ${j+1})`;
+                        let newPage = { id: Date.now().toString() + "_" + j, url: primaryUrl, urls: chunkUrls, sourceUrl: sourceUrl, type: detectMediaType(primaryUrl), category: currentMagazine, title: chunkTitle, tags: finalTags, notes: chunkText, isCover: false, createdAt: new Date().toISOString() };
+                        generatedItems.push(newPage);
+                    }
+
+                    if (currentFormMode === 'edit') { let editId = document.getElementById('editIdInput').value; let itemIndex = magData.findIndex(i => i.id === editId); if (itemIndex > -1) { magData.splice(itemIndex, 1, ...generatedItems); } } 
+                    else { magData.unshift(...generatedItems); }
+                    saveData(); closeForm();
                 }
-                saveData(); closeForm();
-            }
+            } catch (err) { console.error(err); alert("Error saving page."); } finally { btnSubmit.innerText = originalText; btnSubmit.disabled = false; }
         });
 
         function exportData() {
             if (magData.length === 0) return alert("No data to backup.");
-            const blob = new Blob([JSON.stringify(magData, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url; a.download = "Magazine_Backup.json";
-            document.body.appendChild(a); a.click(); URL.revokeObjectURL(url);
+            const blob = new Blob([JSON.stringify(magData, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = "Magazine_Backup.json"; document.body.appendChild(a); a.click(); URL.revokeObjectURL(url);
         }
 
         function importData(event) {
-            const file = event.target.files[0]; 
-            if (!file) return;
-
-            // Peringatan jika pengguna salah upload file HTML
-            if (file.name.endsWith('.html')) {
-                alert("Please select the JSON backup file, not the Standalone HTML file.");
-                document.getElementById('importFile').value = '';
-                return;
-            }
-
+            const file = event.target.files[0]; if (!file) return;
+            if (file.name.endsWith('.html')) { alert("Please select the JSON backup file, not the Standalone HTML file."); document.getElementById('importFile').value = ''; return; }
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (Array.isArray(importedData)) { 
-                        importedData.forEach(item => {
-                            if (item.type === 'meta') {
-                                let existingIndex = magData.findIndex(i => i.type === 'meta' && i.category === item.category);
-                                if (existingIndex === -1) magData.push(item);
-                            } else {
-                                let exists = magData.find(i => i.id === item.id);
-                                if (!exists) magData.unshift(item);
-                            }
-                        }); 
-                        saveData(); 
-                        alert(`Backup data restored successfully!`); 
-                    } else {
-                        alert("Invalid file format.");
-                    }
+                    if (Array.isArray(importedData)) { importedData.forEach(item => { if (item.type === 'meta') { let existingIndex = magData.findIndex(i => i.type === 'meta' && i.category === item.category); if (existingIndex === -1) magData.push(item); } else { let exists = magData.find(i => i.id === item.id); if (!exists) magData.unshift(item); } }); saveData(); alert(`Backup data restored successfully!`); } 
+                    else { alert("Invalid file format."); }
                 } catch (err) { alert("Invalid JSON file. Please ensure it is a valid backup file."); }
                 document.getElementById('importFile').value = ''; 
             };
