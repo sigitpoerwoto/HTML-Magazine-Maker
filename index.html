@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flip Magazine - Bug Free Edition</title>
+    <title>Flip Magazine - Flipboard Style Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: {} }
+            theme: { extend: { colors: { flipred: '#E12828' } } }
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -40,10 +40,10 @@
         .dark .search-bar:focus { border-bottom-color: #3b82f6; }
 
         .reader-y { flex-direction: column; overflow-y: auto; overflow-x: hidden; scroll-snap-type: y mandatory; }
-        .reader-y .snap-page { scroll-snap-align: start; width: 100vw; height: 100vh; flex-shrink: 0; }
+        .reader-y .snap-page { scroll-snap-align: start; flex: 0 0 100vh; min-height: 100vh; max-height: 100vh; width: 100vw; }
         
         .reader-x { flex-direction: row; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; }
-        .reader-x .snap-page { scroll-snap-align: center; width: 100vw; height: 100vh; flex-shrink: 0; }
+        .reader-x .snap-page { scroll-snap-align: center; flex: 0 0 100vw; min-width: 100vw; max-width: 100vw; height: 100vh; }
 
         @media (min-width: 768px) {
             .reader-y .snap-page:nth-child(even) {
@@ -98,7 +98,7 @@
                 <div class="flex flex-wrap gap-4 w-full md:w-auto">
                     <button onclick="downloadMagazineHTML()" id="btnDownloadHtml" class="btn-mag bg-[#0078D7] text-white border-none hover:bg-blue-800 dark:bg-blue-600 dark:text-white font-bold">🌐 DOWNLOAD HTML</button>
                     <button onclick="openForm('page')" class="btn-mag bg-white dark:bg-gray-700 text-black dark:text-white font-bold">+ ADD PAGE</button>
-                    <button onclick="startReading()" class="btn-mag bg-black dark:bg-gray-200 text-white dark:text-black font-bold shadow-lg border-none px-6">📖 READ MAGAZINE</button>
+                    <button onclick="startReading()" class="btn-mag bg-black dark:bg-gray-200 text-white dark:text-black font-bold shadow-lg border-none px-6 hover:bg-flipred dark:hover:bg-flipred dark:hover:text-white">📖 READ MAGAZINE</button>
                 </div>
             </div>
             <div id="pageGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
@@ -106,24 +106,29 @@
     </main>
 
     <div id="readerView" class="hidden fixed inset-0 z-40 bg-black">
+        
         <div id="readerContent" class="reader-x w-full h-full flex scroll-smooth"></div>
         
-        <button id="btnPrevPage" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❮</button>
-        <button id="btnNextPage" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❯</button>
+        <button onclick="closeReader()" class="fixed top-6 left-6 z-[60] bg-black/30 backdrop-blur-md text-white px-5 py-2.5 rounded-full font-bold text-xs tracking-widest hover:bg-black/90 transition-colors shadow-xl border border-white/20 flex items-center gap-2">
+            <span>←</span> PAGES
+        </button>
 
-        <button onclick="toggleReaderUI()" title="Toggle Menu (M / ESC)" class="fixed bottom-6 right-6 z-[60] bg-white/20 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity duration-300 text-xl shadow-2xl border border-gray-400">👁️</button>
+        <button onclick="closeToShelf()" class="fixed top-6 right-6 z-[60] bg-black/30 backdrop-blur-md text-white px-5 py-2.5 rounded-full font-bold text-xs tracking-widest hover:bg-flipred transition-colors shadow-xl border border-white/20 flex items-center gap-2">
+            SHELF <span>🏠</span>
+        </button>
 
-        <div id="readerUI" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-wrap justify-center gap-2 w-full px-4 transition-all duration-500 ease-in-out transform opacity-100">
-            <button onclick="toggleReaderMode()" id="btnReaderMode" class="btn-mag bg-black/80 dark:bg-gray-800/80 text-white font-bold shadow-2xl border border-gray-600 hover:scale-105 backdrop-blur-md">↕️ VERTICAL SCROLL</button>
-            <button onclick="closeReader()" class="btn-mag bg-white/90 dark:bg-gray-300/90 text-black font-bold shadow-2xl border-none hover:scale-105 backdrop-blur-md">📂 PAGE LIST</button>
-            <button onclick="closeToShelf()" class="btn-mag bg-[#D83B01]/90 text-white font-bold shadow-2xl border-none hover:scale-105 backdrop-blur-md">🏠 MAGAZINE SHELF</button>
-        </div>
+        <button id="btnPrevPage" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-[60] bg-black/30 backdrop-blur-md text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-colors hidden md:flex text-2xl font-bold shadow-xl border border-white/20">❮</button>
+        <button id="btnNextPage" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-[60] bg-black/30 backdrop-blur-md text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-colors hidden md:flex text-2xl font-bold shadow-xl border border-white/20">❯</button>
+
+        <button onclick="toggleReaderMode()" id="btnReaderMode" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-black/30 backdrop-blur-md text-white px-6 py-2.5 rounded-full font-bold text-xs tracking-widest hover:bg-black/90 transition-colors shadow-xl border border-white/20">
+            ↕️ SCROLL MODE
+        </button>
     </div>
 
-    <div id="imageViewer" class="hidden fixed inset-0 z-[200] bg-black/95 flex items-center justify-center overflow-hidden touch-none">
-        <button onclick="closeImageViewer()" class="absolute top-6 right-6 text-white text-xl z-10 bg-black/50 hover:bg-red-600 w-12 h-12 rounded-full border border-gray-600 transition-colors">✕</button>
-        <div class="absolute bottom-6 text-white/50 text-xs tracking-widest uppercase font-bold z-10 pointer-events-none">Scroll / Pinch to Zoom • Drag to Navigate</div>
-        <img id="zoomImage" src="" class="max-w-full max-h-full object-contain transition-transform duration-100 ease-out" style="transform-origin: center; cursor: grab;">
+    <div id="imageViewer" onclick="closeImageViewer()" class="hidden fixed inset-0 z-[200] bg-black/95 flex items-center justify-center overflow-hidden touch-none cursor-pointer">
+        <button onclick="closeImageViewer(); event.stopPropagation();" class="absolute top-6 right-6 text-white text-2xl z-[300] bg-black/50 backdrop-blur-md hover:bg-flipred w-14 h-14 rounded-full border border-white/20 transition-colors flex items-center justify-center shadow-2xl">✕</button>
+        <div class="absolute bottom-6 text-white/50 text-xs tracking-widest uppercase font-bold z-10 pointer-events-none">Scroll / Pinch to Zoom • Drag to Navigate • Click outside to close</div>
+        <img id="zoomImage" src="" onmousedown="event.stopPropagation();" onclick="event.stopPropagation();" class="max-w-full max-h-full object-contain transition-transform duration-100 ease-out z-[250]" style="transform-origin: center; cursor: grab;">
     </div>
 
     <div id="formModal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
@@ -196,17 +201,12 @@
                 btnIcon.innerText = isDark ? "☀️" : "🌙";
             }
         }
-
-        if(localStorage.getItem('magFlipDarkMode') === 'true') {
-            document.documentElement.classList.add('dark');
-        }
+        if(localStorage.getItem('magFlipDarkMode') === 'true') { document.documentElement.classList.add('dark'); }
         applyDarkModeUI();
-
         function toggleDarkMode() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('magFlipDarkMode', isDark);
-            applyDarkModeUI();
-            renderViews(); 
+            applyDarkModeUI(); renderViews(); 
         }
 
         // --- 256 COLOR PALETTE GENERATOR ---
@@ -220,36 +220,23 @@
             return magPalette[Math.abs(hash) % 256];
         }
 
-        let magData = [];
-        try {
-            const rawData = localStorage.getItem('magFlipData');
-            if (rawData) { magData = JSON.parse(rawData); if (!Array.isArray(magData)) magData = []; }
-        } catch (e) { magData = []; }
-        
-        let activeHlsEngines = []; let currentView = 'shelf'; let currentMagazine = null; 
-        let currentReaderDirection = 'x'; let currentFormMode = 'magazine'; let isSafeMode = true; 
-        
-        // --- MANUAL UI TOGGLE ---
-        let isUIVisible = true;
-        function toggleReaderUI() {
-            isUIVisible = !isUIVisible;
-            const uiBottom = document.getElementById('readerUI');
-            const uiTop = document.getElementById('globalHeader');
-            const btnPrev = document.getElementById('btnPrevPage');
-            const btnNext = document.getElementById('btnNextPage');
-            
-            if (isUIVisible) {
-                if(uiBottom) uiBottom.classList.remove('opacity-0', 'pointer-events-none');
-                if(uiTop) uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
-                if(btnPrev) btnPrev.classList.remove('opacity-0', 'pointer-events-none');
-                if(btnNext) btnNext.classList.remove('opacity-0', 'pointer-events-none');
-            } else {
-                if(uiBottom) uiBottom.classList.add('opacity-0', 'pointer-events-none');
-                if(uiTop) uiTop.classList.add('opacity-0', '-translate-y-full', 'pointer-events-none');
-                if(btnPrev) btnPrev.classList.add('opacity-0', 'pointer-events-none');
-                if(btnNext) btnNext.classList.add('opacity-0', 'pointer-events-none');
-            }
+        // --- NETWORK MAGIC (Auto URL Converter) ---
+        function normalizeMediaUrl(url) {
+            if (!url) return url;
+            let u = url.trim();
+            const gDriveRegex = /drive\.google\.com\/file\/d\/([^\/]+)/i;
+            const gDriveMatch = u.match(gDriveRegex);
+            if (gDriveMatch && gDriveMatch[1]) { return `https://drive.google.com/uc?export=view&id=${gDriveMatch[1]}`; }
+            if (u.includes('dropbox.com')) { u = u.replace('?dl=0', ''); if (!u.includes('raw=1')) { u = u.includes('?') ? u + '&raw=1' : u + '?raw=1'; } return u; }
+            if (u.includes('youtube.com/shorts/')) { return u.replace('youtube.com/shorts/', 'youtube.com/watch?v='); }
+            return u;
         }
+
+        let magData = [];
+        try { const rawData = localStorage.getItem('magFlipData'); if (rawData) { magData = JSON.parse(rawData); if (!Array.isArray(magData)) magData = []; } } catch (e) { magData = []; }
+        
+        let activeHlsEngines = []; let currentView = 'shelf'; let currentMagazine = null; let currentReaderDirection = 'x'; let currentFormMode = 'magazine'; 
+        let isSafeMode = true; 
 
         function saveData() { localStorage.setItem('magFlipData', JSON.stringify(magData)); renderViews(); }
         
@@ -291,6 +278,15 @@
         }
 
         // --- FIXED REORDER AND DELETE LOGIC (CASTING ID TO STRING) ---
+        window.deletePage = function(id) {
+            if (confirm("Delete this page from the magazine?")) {
+                const originalLength = magData.length;
+                magData = magData.filter(i => String(i.id) !== String(id));
+                if (magData.length < originalLength) { saveData(); } 
+                else { alert("Error: Page ID not found in database."); }
+            }
+        };
+
         function movePage(id, direction) {
             let mediaItems = getFilteredData().filter(i => i.type !== 'meta' && i.category === currentMagazine);
             let pos = mediaItems.findIndex(i => String(i.id) === String(id));
@@ -313,14 +309,6 @@
             }
         }
 
-        function deletePage(id) {
-            if (confirm("Delete this page from the magazine?")) {
-                // BUG FIXED: Memaksa kedua ID menjadi String agar kompatibel dengan memori lama
-                magData = magData.filter(i => String(i.id) !== String(id));
-                saveData();
-            }
-        }
-
         function setCover(id, category) { 
             magData.forEach(i => { if (i.category === category) i.isCover = false; }); 
             const target = magData.find(i => String(i.id) === String(id)); 
@@ -330,9 +318,15 @@
 
         const imgView = document.getElementById('imageViewer'); const zoomImg = document.getElementById('zoomImage');
         let zScale = 1, zPanning = false, zPointX = 0, zPointY = 0, zStartX = 0, zStartY = 0; let initialPinchDistance = null, initialScale = 1;
-        function openImageViewer(url) { zoomImg.src = url; zScale = 1; zPointX = 0; zPointY = 0; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; imgView.classList.remove('hidden'); }
+        
+        function openImageViewer(url) { 
+            zoomImg.src = url; zScale = 1; zPointX = 0; zPointY = 0; 
+            zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; 
+            imgView.classList.remove('hidden'); 
+        }
         function closeImageViewer() { imgView.classList.add('hidden'); zoomImg.src = ''; }
-        zoomImg.onmousedown = function(e) { e.preventDefault(); zPanning = true; zStartX = e.clientX - zPointX; zStartY = e.clientY - zPointY; zoomImg.classList.replace('cursor-grab', 'cursor-grabbing'); }
+        
+        zoomImg.onmousedown = function(e) { e.preventDefault(); e.stopPropagation(); zPanning = true; zStartX = e.clientX - zPointX; zStartY = e.clientY - zPointY; zoomImg.classList.replace('cursor-grab', 'cursor-grabbing'); }
         imgView.onmouseup = function() { zPanning = false; zoomImg.classList.replace('cursor-grabbing', 'cursor-grab'); }
         imgView.onmouseleave = function() { zPanning = false; zoomImg.classList.replace('cursor-grabbing', 'cursor-grab'); }
         imgView.onmousemove = function(e) { if(!zPanning) return; zPointX = e.clientX - zStartX; zPointY = e.clientY - zStartY; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; }
@@ -341,6 +335,7 @@
         imgView.addEventListener('touchmove', (e) => { if (e.touches.length === 2) { e.preventDefault(); const currentDistance = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); zScale = Math.min(Math.max(1, initialScale * (currentDistance / initialPinchDistance)), 4); zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } else if (e.touches.length === 1 && zPanning) { e.preventDefault(); zPointX = e.touches[0].clientX - zStartX; zPointY = e.touches[0].clientY - zStartY; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } }, {passive: false});
         imgView.addEventListener('touchend', (e) => { if (e.touches.length < 2) initialPinchDistance = null; if (e.touches.length === 0) { zPanning = false; if(zScale === 1) { zPointX = 0; zPointY = 0; zoomImg.style.transform = `translate(${zPointX}px, ${zPointY}px) scale(${zScale})`; } } });
 
+        // --- CORE HTML GENERATOR (FOR READING & EXPORT) ---
         function generatePageHtml(item, globalPageCount, isDarkExport) {
             let urlsToRender = item.urls && item.urls.length > 0 ? item.urls : (item.url ? [item.url] : []);
             let isReverse = (globalPageCount % 2 === 0); 
@@ -364,6 +359,7 @@
             let mediaHtml = '';
             let textHtml = '';
 
+            // GENERATE MEDIA
             if (hasMedia) {
                 let gridCols = urlsToRender.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
                 let mediaWidth = hasText ? 'md:w-1/2' : 'w-full';
@@ -373,7 +369,7 @@
                     let uType = detectMediaType(u);
                     let imgBg = urlsToRender.length === 1 ? 'bg-contain' : 'bg-cover';
                     if (uType === 'image') {
-                        mediaHtml += `<div class="relative w-full h-full bg-[#111] cursor-zoom-in group overflow-hidden block" onclick="openImageViewer('${u}')"><div class="absolute inset-0 ${imgBg} bg-no-repeat bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('${u}')"></div>${urlsToRender.length===1?`<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/30 transition duration-300 pointer-events-none"><span class="bg-black/80 text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase shadow-2xl">🔍 Expand</span></div>`:''}</div>`;
+                        mediaHtml += `<div class="relative w-full h-full bg-[#111] cursor-zoom-in group overflow-hidden block" onclick="openImageViewer('${u}')"><div class="absolute inset-0 ${imgBg} bg-no-repeat bg-center transition-transform duration-500 group-hover:scale-105" style="background-image: url('${u}')"></div>${urlsToRender.length===1?`<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/30 transition duration-300 pointer-events-none"><span class="bg-black/80 text-white px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase shadow-2xl border border-white/20 backdrop-blur-md">🔍 Expand</span></div>`:''}</div>`;
                     } else if (uType === 'video') {
                         mediaHtml += `<div class="w-full h-full bg-black flex items-center justify-center" onmousedown="event.stopPropagation()"><video controls class="max-w-full max-h-full w-full h-full object-contain"><source src="${u}"></video></div>`;
                     } else if (uType === 'hls') {
@@ -388,8 +384,10 @@
                 mediaHtml += `</div>`;
             }
 
+            // GENERATE TEXT
             if (hasText) {
                 if (!hasMedia) {
+                    // PURE TEXT: 2 Columns Center
                     textHtml = `
                         <div class="w-full h-full p-8 md:p-16 flex flex-col overflow-y-auto ${bgClass} justify-center items-center" onmousedown="event.stopPropagation()">
                             <div class="max-w-5xl w-full">
@@ -400,6 +398,7 @@
                             </div>
                         </div>`;
                 } else {
+                    // MIXED: Half screen Text
                     textHtml = `
                         <div class="w-full h-[60vh] md:h-full md:w-1/2 p-6 md:p-16 flex flex-col overflow-y-auto pb-32 ${bgClass}" onmousedown="event.stopPropagation()">
                             <div class="mb-4 pointer-events-none">${tagsHtml}</div>
@@ -430,10 +429,16 @@
             const metaItem = allItems.find(i => i.type === 'meta');
             let mediaItems = allItems.filter(i => i.type !== 'meta');
 
-            if (mediaItems.length === 0) { alert("No pages to export."); btn.innerText = "🌐 DOWNLOAD HTML"; btn.disabled = false; return; }
+            if (mediaItems.length === 0) {
+                alert("No pages to export.");
+                btn.innerText = "🌐 DOWNLOAD HTML"; btn.disabled = false;
+                return;
+            }
 
-            let pagesHtml = ''; let globalPageCount = 1; const isDarkModeExport = document.documentElement.classList.contains('dark');
-            
+            let pagesHtml = '';
+            let globalPageCount = 1; 
+            const isDarkModeExport = document.documentElement.classList.contains('dark');
+
             mediaItems.forEach((item) => {
                 let rawHtml = generatePageHtml(item, globalPageCount, isDarkModeExport);
                 rawHtml = rawHtml.replace(/onclick="openImageViewer\([^)]+\)"/g, ''); 
@@ -448,6 +453,7 @@
                 globalPageCount++;
             });
 
+            // FLIPBOARD FROSTED GLASS UI UNTUK EXPORT
             let htmlContent = `<!DOCTYPE html>
 <html lang="en" class="${isDarkModeExport ? 'dark' : ''}">
 <head>
@@ -456,14 +462,14 @@
     <title>${currentMagazine} - Magazine Export</title>
     <script src="https://cdn.tailwindcss.com"><\/script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
-    <script>tailwind.config = { darkMode: 'class', theme: { extend: {} } }<\/script>
+    <script>tailwind.config = { darkMode: 'class', theme: { extend: { colors: { flipred: '#E12828' } } } }<\/script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap');
         body { font-family: 'Lato', sans-serif; background-color: #000; margin: 0; overflow: hidden; }
         h1, h2, h3, .magazine-title { font-family: 'Playfair Display', serif; }
         ::-webkit-scrollbar { width: 0; height: 0; display: none; }
         .reader-x { display: flex; flex-direction: row; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; height: 100vh; width: 100vw; scroll-behavior: smooth; }
-        .snap-page { flex: 0 0 100vw; width: 100vw; height: 100vh; scroll-snap-align: center; display: flex; }
+        .snap-page { flex: 0 0 100vw; width: 100vw; height: 100vh; scroll-snap-align: center; display: flex; min-width: 100vw; max-width: 100vw; }
     </style>
 </head>
 <body class="${isDarkModeExport ? 'bg-gray-900' : 'bg-black'}">
@@ -473,35 +479,26 @@
                 <h2 class="text-5xl md:text-8xl mb-4 text-center magazine-title uppercase drop-shadow-lg">${currentMagazine}</h2>
                 <p class="text-xl font-light tracking-widest uppercase mb-12 drop-shadow-md">${mediaItems.length} PAGES</p>
                 <p class="text-sm font-light text-gray-200 max-w-2xl text-center mb-8">${metaItem && metaItem.notes ? metaItem.notes : ''}</p>
-                <div class="animate-pulse mt-8 border border-white rounded-full px-6 py-2 text-xs tracking-widest font-bold">SWIPE OR USE ARROWS<br><span class="text-[9px] mt-2 block opacity-70">PRESS 'M' OR 'ESC' FOR MENU</span></div>
+                <div class="animate-pulse mt-8 border border-white/40 rounded-full px-6 py-2 text-xs tracking-widest font-bold backdrop-blur-md">USE ARROWS / KEYBOARD TO READ</div>
             </div>
         </div>
         ${pagesHtml}
     </div>
 
-    <button id="btnPrev" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❮</button>
-    <button id="btnNext" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/60 text-white w-14 h-14 rounded-full items-center justify-center hover:bg-black/90 transition-all duration-500 opacity-100 hidden md:flex text-2xl font-bold shadow-xl border border-gray-600">❯</button>
-    <button onclick="toggleUI()" title="Toggle Menu (M / ESC)" class="fixed bottom-6 right-6 z-[60] bg-white/20 backdrop-blur-md text-white w-12 h-12 rounded-full flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity duration-300 text-xl shadow-2xl border border-gray-400">👁️</button>
+    <button id="btnPrev" onclick="prevPage()" class="fixed left-6 top-1/2 -translate-y-1/2 z-50 bg-black/30 backdrop-blur-md text-white w-14 h-14 rounded-full flex items-center justify-center hover:bg-black/90 transition-colors hidden md:flex text-2xl font-bold shadow-xl border border-white/20">❮</button>
+    <button id="btnNext" onclick="nextPage()" class="fixed right-6 top-1/2 -translate-y-1/2 z-50 bg-black/30 backdrop-blur-md text-white w-14 h-14 rounded-full flex items-center justify-center hover:bg-black/90 transition-colors hidden md:flex text-2xl font-bold shadow-xl border border-white/20">❯</button>
 
     <script>
-        const magPalette = [];
-        for(let i = 0; i < 128; i++) magPalette.push(\`hsl(\${Math.floor((i/128)*360)}, 80%, 45%)\`);
-        for(let i = 0; i < 128; i++) magPalette.push(\`hsl(\${Math.floor((i/128)*360)}, 65%, 85%)\`);
-        function getPaletteColor(str) { let hash=0; if(!str)str="default"; for(let i=0;i<str.length;i++) hash=str.charCodeAt(i)+((hash<<5)-hash); return magPalette[Math.abs(hash)%256]; }
-
         document.querySelectorAll('.hls-video-dynamic').forEach(videoEl => { let src = videoEl.getAttribute('data-src'); if (typeof Hls !== 'undefined' && Hls.isSupported()) { const hls = new Hls(); hls.loadSource(src); hls.attachMedia(videoEl); } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = src; } });
-        const slider = document.getElementById('readerContent'); const btnPrev = document.getElementById('btnPrev'); const btnNext = document.getElementById('btnNext');
+        const slider = document.getElementById('readerContent'); 
         
-        let isUIVis = true;
-        function toggleUI() {
-            isUIVis = !isUIVis;
-            if(isUIVis){ btnPrev.classList.remove('opacity-0', 'pointer-events-none'); btnNext.classList.remove('opacity-0', 'pointer-events-none'); }
-            else{ btnPrev.classList.add('opacity-0', 'pointer-events-none'); btnNext.classList.add('opacity-0', 'pointer-events-none'); }
-        }
-
-        function prevPage() { slider.scrollBy({ left: -window.innerWidth, behavior: 'smooth' }); } 
-        function nextPage() { slider.scrollBy({ left: window.innerWidth, behavior: 'smooth' }); }
-        document.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') prevPage(); if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); } if (e.key === 'Escape' || e.key.toLowerCase() === 'm') toggleUI(); });
+        function prevPage() { slider.scrollBy({ left: -slider.clientWidth, behavior: 'smooth' }); } 
+        function nextPage() { slider.scrollBy({ left: slider.clientWidth, behavior: 'smooth' }); }
+        
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === 'ArrowLeft') prevPage(); 
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); } 
+        });
     <\/script>
 </body>
 </html>`;
@@ -541,27 +538,12 @@
             return `<div class="w-full h-full ${getPaletteColor(item.id)} flex items-center justify-center text-4xl pointer-events-none text-white">📄</div>`;
         }
 
-        function smartMergeItem(newItem) {
-            if (newItem.type === 'meta') {
-                let existingIndex = magData.findIndex(item => item.type === 'meta' && item.category === newItem.category);
-                if (existingIndex === -1) magData.push(newItem);
-                else {
-                    magData[existingIndex].notes = newItem.notes; 
-                    magData[existingIndex].tags = newItem.tags;
-                }
-            } else {
-                let existingItem = magData.find(i => String(i.id) === String(newItem.id));
-                if (!existingItem) magData.unshift(newItem);
-            }
-        }
-
         function renderViews() { if (currentView === 'shelf') renderShelf(); else if (currentView === 'inside') renderInsideMagazine(currentMagazine); }
 
         function openShelf() {
             currentView = 'shelf'; currentMagazine = null;
             document.getElementById('insideView').classList.add('hidden'); document.getElementById('shelfView').classList.remove('hidden');
             const uiTop = document.getElementById('globalHeader'); uiTop.classList.remove('opacity-0', '-translate-y-full', 'pointer-events-none');
-            isUIVisible = true;
             renderViews();
         }
 
@@ -624,14 +606,23 @@
             });
         }
 
-        function prevPage() { const slider = document.getElementById('readerContent'); const walk = currentReaderDirection === 'x' ? window.innerWidth : window.innerHeight; if (currentReaderDirection === 'x') { slider.scrollBy({ left: -walk, behavior: 'smooth' }); } else { slider.scrollBy({ top: -walk, behavior: 'smooth' }); } }
-        function nextPage() { const slider = document.getElementById('readerContent'); const walk = currentReaderDirection === 'x' ? window.innerWidth : window.innerHeight; if (currentReaderDirection === 'x') { slider.scrollBy({ left: walk, behavior: 'smooth' }); } else { slider.scrollBy({ top: walk, behavior: 'smooth' }); } }
+        // --- READER MODE & MANUAL NAVIGASI ---
+        function prevPage() {
+            const slider = document.getElementById('readerContent');
+            const walk = currentReaderDirection === 'x' ? slider.clientWidth : slider.clientHeight;
+            if (currentReaderDirection === 'x') { slider.scrollBy({ left: -walk, behavior: 'smooth' }); } else { slider.scrollBy({ top: -walk, behavior: 'smooth' }); }
+        }
+
+        function nextPage() {
+            const slider = document.getElementById('readerContent');
+            const walk = currentReaderDirection === 'x' ? slider.clientWidth : slider.clientHeight;
+            if (currentReaderDirection === 'x') { slider.scrollBy({ left: walk, behavior: 'smooth' }); } else { slider.scrollBy({ top: walk, behavior: 'smooth' }); }
+        }
 
         document.addEventListener('keydown', (e) => {
             if (currentView !== 'reader') return;
             if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevPage();
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextPage(); }
-            if (e.key === 'Escape' || e.key.toLowerCase() === 'm') toggleReaderUI();
         });
 
         function startReading() {
@@ -649,9 +640,8 @@
                     <div class="bg-black/50 p-12 backdrop-blur-sm w-full h-full flex flex-col items-center justify-center">
                         <h2 class="text-5xl md:text-8xl mb-4 text-center magazine-title uppercase drop-shadow-lg">${currentMagazine}</h2>
                         <p class="text-xl font-light tracking-widest uppercase mb-12 drop-shadow-md">${mediaItems.length} PAGES</p>
-                        <div class="animate-pulse mt-8 border border-white rounded-full px-6 py-2 text-xs tracking-widest font-bold text-center">
-                            SWIPE OR USE ARROWS TO READ<br>
-                            <span class="text-[9px] mt-2 block opacity-70">PRESS 'M' OR 'ESC' FOR MENU</span>
+                        <div class="animate-pulse mt-8 border border-white/40 rounded-full px-6 py-2 text-xs tracking-widest font-bold text-center backdrop-blur-md">
+                            USE ARROWS / KEYBOARD TO READ
                         </div>
                     </div>
                 </div>
@@ -664,13 +654,17 @@
             });
 
             document.getElementById('readerView').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+            
+            // RESET SCROLL POS TO PAGE 0 (COVER)
+            content.style.scrollBehavior = 'auto';
+            content.scrollLeft = 0; 
+            content.scrollTop = 0;
+            setTimeout(() => { content.style.scrollBehavior = 'smooth'; }, 100);
+
             const btn = document.getElementById('btnReaderMode'); btn.innerText = currentReaderDirection === 'x' ? '↕️ VERTICAL SCROLL' : '↔️ HORIZONTAL FLIP';
             document.querySelectorAll('.hls-video-dynamic').forEach(videoEl => { let src = videoEl.getAttribute('data-src'); if (Hls.isSupported()) { const hls = new Hls(); hls.loadSource(src); hls.attachMedia(videoEl); activeHlsEngines.push(hls); } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) { videoEl.src = src; } });
             
             applyReaderDirection();
-            
-            isUIVisible = false; 
-            toggleReaderUI(); 
         }
 
         function toggleReaderMode() { currentReaderDirection = currentReaderDirection === 'x' ? 'y' : 'x'; const btn = document.getElementById('btnReaderMode'); btn.innerText = currentReaderDirection === 'x' ? '↕️ VERTICAL SCROLL' : '↔️ HORIZONTAL FLIP'; applyReaderDirection(); }
@@ -710,7 +704,7 @@
                     else { let newMeta = { id: Date.now().toString(), type: 'meta', category: magName, notes: document.getElementById('magDescInput').value.trim(), tags: finalTags, createdAt: new Date().toISOString() }; magData.push(newMeta); }
                     saveData(); closeForm(); openShelf();
                 } else {
-                    let rawInput = document.getElementById('urlInput').value.trim(); let rawUrls = rawInput.split('\n').map(u => u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1')).filter(u => u !== '');
+                    let rawInput = document.getElementById('urlInput').value.trim(); let rawUrls = rawInput.split('\n').map(u => normalizeMediaUrl(u.trim().replace(/\.gifv(\?.*)?$/i, '.mp4$1'))).filter(u => u !== '');
                     let sourceUrl = document.getElementById('sourceUrlInput').value.trim(); let inputNotes = document.getElementById('notesInput').value.trim(); let inputTitle = document.getElementById('titleInput').value.trim();
 
                     if(rawUrls.length === 0 && !inputNotes && !sourceUrl){ alert("Please provide at least a Media Link OR an Article Note."); return; }
